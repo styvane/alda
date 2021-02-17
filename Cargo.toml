@@ -1,0 +1,12 @@
+[package]
+name = "alda"
+version = "0.0.0"
+publish = false
+authors = ["Styvane Soukossi <mstyvane@gmail.com>"]
+edition = "2018"
+keywords = ["algorithms", "data structure"]
+description = "Various data structure and algorithm implementation for learning purpose"
+
+[dev-dependencies]
+quickcheck = "1"
+quickcheck_macros = "1"
