@@ -74,7 +74,6 @@ where
 /// assert_eq!(c, [91, 12, 7 , 0, -1]);
 /// ```
 ///
-
 pub fn reverse_sort<T>(container: &mut [T])
 where
     T: cmp::Ord,
@@ -89,6 +88,7 @@ where
         }
     }
 }
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
