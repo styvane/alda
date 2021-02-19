@@ -6,6 +6,9 @@
 /// Add two n-bits binary integers, stored in two n-element
 /// arrays. The arrays must be of the same length.
 ///
+/// # Panics
+/// This function will panic if the two slices are of different length.
+///
 /// # Examples
 ///
 /// ```
