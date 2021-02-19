@@ -62,7 +62,8 @@ where
     }
 }
 
-/// Sort container elements in nonincreasing order.
+/// Sort container elements in nonincreasing order using
+/// insertion sort.
 ///
 /// # Examples
 ///
@@ -89,6 +90,36 @@ where
     }
 }
 
+/// Sort container elements using selection sort
+///
+/// # Examples
+///
+/// ```
+/// use alda::sorts;
+///
+/// let mut c  = [0, -2, -1];
+/// sorts::selection_sort(&mut c);
+/// assert_eq!(c, [-2, -1, 0]);
+/// ```
+///
+pub fn selection_sort<T>(container: &mut [T])
+where
+    T: cmp::Ord,
+{
+    if container.len() == 0 {
+        return;
+    }
+    for i in 0..(container.len() - 1) {
+        let mut min = i;
+        for (j, n) in container.iter().enumerate().skip(i + 1) {
+            if n < &container[min] {
+                min = j;
+            }
+        }
+        container.swap(min, i);
+    }
+}
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
@@ -97,7 +128,7 @@ mod tests {
     use super::*;
 
     #[quickcheck]
-    fn test_clrs_insertion_sort(xs: Vec<i32>) -> bool {
+    fn test_clrs_insertion_sort(xs: Vec<isize>) -> bool {
         let mut xs = xs;
         clrs_insertion_sort(&mut xs);
         let mut want = xs.clone();
@@ -135,6 +166,15 @@ mod tests {
         want.sort();
         want.reverse();
         reverse_insertion_sort(&mut xs);
+        xs == want
+    }
+
+    #[quickcheck]
+    fn test_selection_sort(xs: Vec<isize>) -> bool {
+        let mut xs = xs;
+        let mut want = xs.clone();
+        want.sort();
+        selection_sort(&mut xs);
         xs == want
     }
 }
