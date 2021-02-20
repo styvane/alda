@@ -120,6 +120,93 @@ where
     }
 }
 
+/// Sort container elements using merge sort.
+///
+/// # Examples
+///
+/// ```
+/// use alda::sorts;
+///
+/// let mut c = [0, -1, 4, -6];
+/// let n = c.len();
+/// sorts::mergesort(&mut c, 0, n);
+/// assert_eq!(c, [-6, -1, 0, 4]);
+/// ```
+///
+pub fn mergesort<T>(container: &mut [T], start: usize, end: usize)
+where
+    T: cmp::Ord + Clone,
+{
+    if start < end - 1 {
+        let mid = (start + end) / 2;
+        mergesort(container, start, mid);
+        mergesort(container, mid, end);
+        merge(container, start, end);
+    }
+}
+
+// Merge two sorted containers.
+#[allow(dead_code)]
+fn clrs_merge<T>(container: &mut [T], start: usize, mid: usize, end: usize)
+where
+    T: cmp::Ord + Clone,
+{
+    let n1 = mid - start;
+
+    let mut left = Vec::with_capacity(n1);
+    for i in 0..n1 {
+        left.push(container[start + i].clone());
+    }
+
+    let n2 = end - mid;
+
+    let mut right = Vec::with_capacity(n2);
+    for i in 0..n2 {
+        right.push(container[mid + i].clone());
+    }
+
+    let mut i = 0;
+    let mut j = 0;
+
+    for k in start..end {
+        if i < n1 && j < n2 && left[i] <= right[j] || i < n1 && j == n2 {
+            container[k] = left[i].clone();
+            i = i + 1;
+        } else {
+            container[k] = right[j].clone();
+            j = j + 1;
+        }
+    }
+}
+
+// Merge two sorted containers.
+fn merge<T>(container: &mut [T], start: usize, end: usize)
+where
+    T: cmp::Ord + Clone,
+{
+    let c = container[start..end].iter().cloned().collect::<Vec<_>>();
+    let len = c.len();
+
+    let (left, right) = c.split_at(len / 2);
+
+    let mut left = left.iter().peekable();
+    let mut right = right.iter().peekable();
+
+    for i in start..end {
+        if let (Some(l), Some(r)) = (left.peek(), right.peek()) {
+            if l <= r {
+                container[i] = left.next().unwrap().clone();
+            } else {
+                container[i] = right.next().unwrap().clone();
+            }
+        } else if left.peek().is_some() {
+            container[i] = left.next().unwrap().clone();
+        } else {
+            container[i] = right.next().unwrap().clone();
+        }
+    }
+}
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
@@ -176,5 +263,25 @@ mod tests {
         want.sort();
         selection_sort(&mut xs);
         xs == want
+    }
+
+    #[test]
+    fn test_merge() {
+        let mut a = [5, -1, 3, 0, 4, 2];
+        clrs_merge(&mut a, 1, 3, 4);
+        assert_eq!(a, [5, -1, 0, 3, 4, 2]);
+    }
+
+    #[quickcheck]
+    fn test_mergesort(xs: Vec<isize>) -> bool {
+        let mut xs = xs;
+        let mut want = xs.clone();
+        want.sort();
+        if xs.len() > 0 {
+            let n = xs.len();
+            mergesort(&mut xs, 0, n);
+            return xs == want;
+        }
+        true
     }
 }
