@@ -50,12 +50,16 @@ where
     let mut upper = container.len();
     while lower < upper {
         let mid = (lower + upper) / 2;
-        if container[mid] < *key {
-            lower = mid + 1;
-        } else if container[mid] > *key {
-            upper = mid - 1;
-        } else {
-            return Some(mid);
+        match container[mid].cmp(key) {
+            Ordering::Equal => {
+                return Some(mid);
+            }
+            Ordering::Less => {
+                lower = mid + 1;
+            }
+            Ordering::Greater => {
+                upper = mid - 1;
+            }
         }
     }
     None
