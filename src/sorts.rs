@@ -207,6 +207,35 @@ where
     }
 }
 
+/// Recursive sort container using insertion sort
+///
+/// # Examples
+///
+/// ```
+/// use alda::sorts;
+///
+/// let mut a = [-9, 0, 7, -1, 4];
+/// let n = a.len();
+/// sorts::recursive_insort(&mut a, n);
+/// assert_eq!(a, [-9, -1, 0, 4, 7]);
+/// ```
+///
+pub fn recursive_insort<T>(container: &mut [T], n: usize)
+where
+    T: cmp::Ord + Clone,
+{
+    if n <= 1 {
+        return;
+    }
+    recursive_insort(container, n - 1);
+    let last = container[n - 1].clone();
+    for j in (0..(n - 1)).rev() {
+        if container[j] > last {
+            container.swap(j + 1, j);
+        }
+    }
+}
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
@@ -280,6 +309,19 @@ mod tests {
         if xs.len() > 0 {
             let n = xs.len();
             mergesort(&mut xs, 0, n);
+            return xs == want;
+        }
+        true
+    }
+
+    #[quickcheck]
+    fn test_recursive_insort(xs: Vec<isize>) -> bool {
+        let mut xs = xs;
+        let mut want = xs.clone();
+        want.sort();
+        if xs.len() > 0 {
+            let n = xs.len();
+            recursive_insort(&mut xs, n);
             return xs == want;
         }
         true
