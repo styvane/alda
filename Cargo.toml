@@ -7,6 +7,9 @@ edition = "2018"
 keywords = ["algorithms", "data structure"]
 description = "Various data structure and algorithm implementation for learning purpose"
 
+[dependencies]
+num-traits = "0.2"
+
 [dev-dependencies]
 quickcheck = "1"
 quickcheck_macros = "1"
