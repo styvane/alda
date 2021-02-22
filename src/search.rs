@@ -11,8 +11,7 @@ use std::cmp::{self, Ordering};
 /// use alda::search;
 ///
 /// let names = ["this", "is", "it"];
-/// let found = search::linear(&names, &"is");
-/// assert_eq!(found, Some(1));
+/// assert_eq!(search::linear(&names, &"is"), Some(1));
 /// ```
 ///
 pub fn linear<T>(container: &[T], key: &T) -> Option<usize>
@@ -35,11 +34,9 @@ where
 /// use alda::search;
 ///
 /// let c = [1, -1, 9, 0];
-/// let result = search::binsearch(&c, &9);
-/// assert_eq!(result, Some(2));
+/// assert_eq!(search::binsearch(&c, &9), Some(2));
 ///
-/// let result = search::binsearch(&c, &2);
-/// assert_eq!(result, None);
+/// assert_eq!(None, search::binsearch(&c, &2));
 /// ```
 ///
 pub fn binsearch<T>(container: &[T], key: &T) -> Option<usize>
@@ -73,15 +70,8 @@ where
 /// use alda::search;
 ///
 /// let a = [-9, -1, 0, 7];
-/// let result = search::recursive_binsearch(&a, &8);
-/// assert_eq!(result, None);
-///
-/// let  result = search::recursive_binsearch(&a, &0);
-/// assert_eq!(result, Some(2));
-///
-/// let a = [-9, -1, 0, 1, 2, 3, 4, 5, 6, 7, 7];
-/// let result = search::recursive_binsearch(&a, &7);
-/// assert_eq!(result, Some(9));
+/// assert_eq!(search::recursive_binsearch(&a, &8), None);
+/// assert_eq!(search::recursive_binsearch(&a, &0), Some(2));
 /// ```
 ///
 pub fn recursive_binsearch<T>(container: &[T], key: &T) -> Option<usize>
@@ -96,13 +86,13 @@ where
     match key.cmp(&container[mid]) {
         Ordering::Equal => Some(mid),
         Ordering::Less => recursive_binsearch(&container[..mid], key),
-        Ordering::Greater => {
+        Ordering::Greater => recursive_binsearch(&container[mid + 1..], key).map(|x| {
             if mid % 2 == 0 {
-                recursive_binsearch(&container[mid + 1..], key).map(|x| x + mid)
+                x + mid + 1
             } else {
-                recursive_binsearch(&container[mid + 1..], key).map(|x| x + mid + 1)
+                x + mid
             }
-        }
+        }),
     }
 }
 
