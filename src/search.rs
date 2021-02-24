@@ -98,7 +98,6 @@ where
 }
 
 // Find maximum crossing subarray.
-#[allow(dead_code)]
 fn find_maximum_cross_subarray<T>(
     arr: &[T],
     lower: usize,
@@ -138,7 +137,7 @@ where
     (max_left, max_right, left_sum + right_sum)
 }
 
-/// Find a maximum subarray of container using recursion
+/// Find a maximum subarray of an array of numbers using recursion.
 ///
 /// # Examples
 ///
@@ -150,24 +149,23 @@ where
 /// ```
 ///
 pub fn recursive_find_maximum_subarray<T>(
-    container: &[T],
+    array: &[T],
     lower: usize,
     upper: usize,
 ) -> (usize, usize, T)
 where
     T: cmp::Ord + Copy + Num + NumOps,
 {
-    assert!(!container.is_empty());
+    assert!(!array.is_empty());
 
     if lower == upper - 1 {
-        return (lower, lower, container[lower]);
+        return (lower, lower, array[lower]);
     }
     let mid = (lower + upper) / 2;
-    let (left_lower, left_upper, left_sum) = recursive_find_maximum_subarray(container, lower, mid);
-    let (right_lower, right_upper, right_sum) =
-        recursive_find_maximum_subarray(container, mid, upper);
+    let (left_lower, left_upper, left_sum) = recursive_find_maximum_subarray(array, lower, mid);
+    let (right_lower, right_upper, right_sum) = recursive_find_maximum_subarray(array, mid, upper);
     let (cross_lower, cross_upper, cross_sum) =
-        find_maximum_cross_subarray(container, lower, mid, upper);
+        find_maximum_cross_subarray(array, lower, mid, upper);
     if left_sum >= right_sum && left_sum > cross_sum {
         (left_lower, left_upper, left_sum)
     } else if right_sum >= left_sum && right_sum >= cross_sum {
@@ -175,6 +173,40 @@ where
     } else {
         (cross_lower, cross_upper, cross_sum)
     }
+}
+
+/// Find a maximum subarray of an array of numbers using brute force.
+///
+/// # Examples
+///
+/// ```
+/// use alda::search;
+///
+/// let a = &[-99, -1, 2, 9, -11, -3, 4, 89, -2];
+/// assert_eq!(search::brute_force_maximum_subarray(a), (6, 7, 93));
+///```
+///
+pub fn brute_force_maximum_subarray<T>(array: &[T]) -> (usize, usize, T)
+where
+    T: Ord + Copy + Num + NumOps,
+{
+    let mut lower = 0;
+    let mut upper = 0;
+    let mut max_sum = array[0];
+
+    for (i, v) in array.iter().enumerate() {
+        let mut sum = *v;
+        for (j, n) in array.iter().enumerate().skip(i + 1) {
+            sum = sum + *n;
+            if sum > max_sum {
+                max_sum = sum;
+                lower = i;
+                upper = j;
+            }
+        }
+    }
+
+    (lower, upper, max_sum)
 }
 
 #[cfg(test)]
