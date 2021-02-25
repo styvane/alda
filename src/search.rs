@@ -209,6 +209,45 @@ where
     (lower, upper, max_sum)
 }
 
+/// Find a maximum subarray of an array in linear-time.
+///
+/// # Examples
+///
+/// ```
+/// use alda::search;
+///
+/// let a = &[-99, -1, 2, 9, -11, -3, 4, 89, -2];
+/// assert_eq!(search::find_maximum_subarray(a), (6, 7, 93));
+/// ```
+///
+pub fn find_maximum_subarray<T>(array: &[T]) -> (usize, usize, T)
+where
+    T: cmp::Ord + Copy + Num + NumOps,
+{
+    let mut lower = 0;
+    let mut upper = 0;
+    let mut sum = array[0];
+    let mut max_sum = array[0];
+    let mut current_low = 0;
+
+    for (i, v) in array.iter().enumerate().skip(1) {
+        let v = *v;
+        sum = sum + v;
+        let current_upper = i;
+        if sum < v {
+            current_low = i;
+            sum = v;
+        }
+        if max_sum < sum {
+            max_sum = sum;
+            lower = current_low;
+            upper = current_upper;
+        }
+    }
+
+    (lower, upper, max_sum)
+}
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
