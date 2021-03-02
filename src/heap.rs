@@ -14,8 +14,10 @@ where
     T: Ord,
     P: Fn(&Node<T>, &Node<T>) -> bool,
 {
-    nodes: RefCell<Vec<Node<T>>>,
+    pub size: usize,
     predicate: P,
+    pub is_sorted: bool,
+    nodes: RefCell<Vec<Node<T>>>,
 }
 
 impl<T, P> fmt::Debug for Heap<T, P>
@@ -46,8 +48,10 @@ where
     ///
     pub fn new(predicate: P) -> Heap<T, P> {
         Heap {
-            nodes: RefCell::new(Vec::<Node<T>>::new()),
+            size: 0,
             predicate,
+            is_sorted: true,
+            nodes: RefCell::new(Vec::<Node<T>>::new()),
         }
     }
 
@@ -69,25 +73,13 @@ where
         assert!(nodes.len() > 0);
 
         let mut h = Heap {
-            nodes: RefCell::new(nodes),
+            size: nodes.len(),
             predicate,
+            is_sorted: true,
+            nodes: RefCell::new(nodes),
         };
         h.build();
         h
-    }
-    /// Get a `Heap` size.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use alda::heap::{Heap, Node};
-    ///
-    /// let h = Heap::from(vec![Node::new(3), Node::new(1)], |x, y| x < y);
-    /// assert_eq!(h.size(), 2);
-    /// ```
-    ///
-    pub fn size(&self) -> usize {
-        self.nodes.borrow().len()
     }
 
     /// Maintain the heap property.
@@ -103,10 +95,10 @@ where
     /// ```
     ///
     pub fn build(&mut self) {
-        if self.size() < 2 {
+        if self.size < 2 {
             return;
         }
-        for i in (0..self.size() / 2).rev() {
+        for i in (0..self.size / 2).rev() {
             self.heapify(i);
         }
     }
@@ -115,14 +107,14 @@ where
         let left = 2 * index + 1;
         let mut largest = index;
 
-        if left < self.size()
+        if left < self.size
             && (self.predicate)(&self.nodes.borrow()[left], &self.nodes.borrow()[index])
         {
             largest = left;
         }
 
         let right = 2 * index + 2;
-        if right < self.size()
+        if right < self.size
             && (self.predicate)(&self.nodes.borrow()[right], &self.nodes.borrow()[largest])
         {
             largest = right;
@@ -132,6 +124,30 @@ where
             self.nodes.borrow_mut().swap(index, largest);
             self.heapify(largest);
         }
+    }
+
+    /// Sort the the nodes in the heap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use alda::heap::{Heap, Node};
+    ///
+    /// let mut h = Heap::from([0, -1, 7, -3].iter().map(|&x| Node::new(x)).collect(), |x: &Node<i32>, y: &Node<i32>| x < y);
+    /// h.sort();
+    /// assert!(h.is_sorted);
+    /// ```
+    ///
+    pub fn sort(&mut self) {
+        for i in (1..self.size).rev() {
+            self.nodes.borrow_mut().swap(i, 0);
+            self.size = self.size - 1;
+            self.heapify(0);
+        }
+        self.is_sorted = true;
+        self.size = self.nodes.borrow().len();
     }
 }
 
@@ -208,5 +224,39 @@ mod tests {
         let h = Heap::from(xs, |x, y| x > y);
         let x = h.nodes.borrow()[0] >= h.nodes.borrow()[1];
         x
+    }
+
+    #[quickcheck]
+    fn test_sort_ascending(xs: Vec<isize>) -> bool {
+        if xs.len() < 2 {
+            return true;
+        }
+        let xs = xs.iter().map(|&x| Node::new(x)).collect();
+        let mut h = Heap::from(xs, |x, y| x < y);
+        let s = h.size;
+        let mut is_sorted = false;
+        h.sort();
+        for i in 0..s - 1 {
+            is_sorted = h.nodes.borrow()[i] >= h.nodes.borrow()[i + 1];
+        }
+
+        is_sorted
+    }
+
+    #[quickcheck]
+    fn test_sort_descending(xs: Vec<isize>) -> bool {
+        if xs.len() < 2 {
+            return true;
+        }
+        let xs = xs.iter().map(|&x| Node::new(x)).collect();
+        let mut h = Heap::from(xs, |x, y| x > y);
+        let s = h.size;
+        let mut is_sorted = false;
+        h.sort();
+        for i in 0..s - 1 {
+            is_sorted = h.nodes.borrow()[i] <= h.nodes.borrow()[i + 1];
+        }
+
+        is_sorted
     }
 }
