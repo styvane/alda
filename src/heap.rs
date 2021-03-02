@@ -8,32 +8,37 @@ use std::cell::RefCell;
 use std::cmp::{Ord, Ordering};
 use std::fmt;
 
-/// Heap is a binary heap data structure.
-pub struct Heap<T, P>
-where
-    T: Ord,
-    P: Fn(&Node<T>, &Node<T>) -> bool,
-{
-    pub size: usize,
-    predicate: P,
-    pub is_sorted: bool,
-    nodes: RefCell<Vec<Node<T>>>,
+/// The [`Kind`] type represents the heap type.
+#[derive(Debug)]
+pub enum Kind {
+    Min,
+    Max,
 }
 
-impl<T, P> fmt::Debug for Heap<T, P>
+/// Heap is a binary heap data structure.
+pub struct Heap<N>
 where
-    T: Ord + fmt::Debug,
-    P: Fn(&Node<T>, &Node<T>) -> bool,
+    N: Ord + Clone,
+{
+    pub size: usize,
+    pub is_sorted: bool,
+
+    kind: Kind,
+    nodes: RefCell<Vec<N>>,
+}
+
+impl<N> fmt::Debug for Heap<N>
+where
+    N: Ord + fmt::Debug + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Heap").field("nodes", &self.nodes).finish()
     }
 }
 
-impl<T, P> Heap<T, P>
+impl<N> Heap<N>
 where
-    T: Ord,
-    P: Fn(&Node<T>, &Node<T>) -> bool,
+    N: Ord + Clone,
 {
     /// Create a new `Heap`.
 
@@ -41,17 +46,17 @@ where
     /// # Examples
     ///
     /// ```
-    /// use alda::heap::{Heap, Node};
+    /// use alda::heap::{Heap, Node, Kind};
     ///
-    /// let h: Heap<_,_> = Heap::new(|x: &Node<isize>, y: &Node<isize>| x < y);
+    /// let h: Heap<Node<i32>> = Heap::new(Kind::Max);
     /// ```
     ///
-    pub fn new(predicate: P) -> Heap<T, P> {
+    pub fn new(kind: Kind) -> Heap<N> {
         Heap {
             size: 0,
-            predicate,
+            kind,
             is_sorted: true,
-            nodes: RefCell::new(Vec::<Node<T>>::new()),
+            nodes: RefCell::new(Vec::<N>::new()),
         }
     }
 
@@ -65,16 +70,16 @@ where
     /// # Examples
     ///
     /// ```
-    /// use alda::heap::{Heap, Node};
+    /// use alda::heap::{Heap, Node, Kind};
     ///
-    /// let h = Heap::from(vec![Node::new(1)], |x, y| x > y);
+    /// let h = Heap::from(vec![Node::new(1)], Kind::Max);
     ///
-    pub fn from(nodes: Vec<Node<T>>, predicate: P) -> Heap<T, P> {
+    pub fn from(nodes: Vec<N>, kind: Kind) -> Heap<N> {
         assert!(nodes.len() > 0);
 
         let mut h = Heap {
+            kind,
             size: nodes.len(),
-            predicate,
             is_sorted: true,
             nodes: RefCell::new(nodes),
         };
@@ -88,9 +93,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use alda::heap::Heap;
+    /// use alda::heap::{Heap, Node, Kind};
     ///
-    /// let mut h: Heap<i32, _> = Heap::new(|x, y| x < y);
+    /// let mut h: Heap<Node<i32>> = Heap::new(Kind::Max);
     /// h.build();
     /// ```
     ///
@@ -106,16 +111,18 @@ where
     fn heapify(&self, index: usize) {
         let left = 2 * index + 1;
         let mut largest = index;
-
-        if left < self.size
-            && (self.predicate)(&self.nodes.borrow()[left], &self.nodes.borrow()[index])
+        let mut predicate: Box<dyn Fn(&N, &N) -> bool> = Box::new(|x, y| x > y);
+        if let Kind::Min = self.kind {
+            predicate = Box::new(|x, y| x < y);
+        }
+        if left < self.size && (predicate)(&self.nodes.borrow()[left], &self.nodes.borrow()[index])
         {
             largest = left;
         }
 
         let right = 2 * index + 2;
         if right < self.size
-            && (self.predicate)(&self.nodes.borrow()[right], &self.nodes.borrow()[largest])
+            && (predicate)(&self.nodes.borrow()[right], &self.nodes.borrow()[largest])
         {
             largest = right;
         }
@@ -133,12 +140,12 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use alda::heap::{Heap, Node};
+    /// use alda::heap::{Heap, Node, Kind};
     ///
-    /// let mut h = Heap::from([0, -1, 7, -3].iter()
+    /// let nodes = [0, -1, 7, -3].iter()
     ///     .map(|&x| Node::new(x))
-    ///     .collect(),
-    ///     |x: &Node<i32>, y: &Node<i32>| x < y);
+    ///     .collect();
+    /// let mut h = Heap::from(nodes, Kind::Max);
     ///
     /// h.sort(); // sort nodes in non increasing order
     /// assert!(h.is_sorted);
@@ -153,20 +160,55 @@ where
         self.is_sorted = true;
         self.size = self.nodes.borrow().len();
     }
+
+    /// Return the maximum value in the heap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use alda::heap::{Heap, Node, Kind};
+    /// let nodes = [0, -1, 7, -3].iter()
+    ///     .map(|&x| Node::new(x))
+    ///     .collect();
+    /// let mut h = Heap::from(nodes, Kind::Max);
+    /// h.sort();
+    /// assert_eq!(h.min(), Some(Node{key:-3}));
+    /// ```
+    ///
+    pub fn min(&self) -> Option<N> {
+        if self.size == 0 {
+            return None;
+        }
+        if let Kind::Min = self.kind {
+            if self.is_sorted {
+                self.nodes.borrow().last().cloned()
+            } else {
+                self.nodes.borrow().first().cloned()
+            }
+        } else {
+            if self.is_sorted {
+                self.nodes.borrow().first().cloned()
+            } else {
+                self.nodes.borrow().last().cloned()
+            }
+        }
+    }
 }
 
 /// Node is a node in the heap.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
-    key: T,
+    pub key: T,
 }
 
 impl<T> Node<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     /// Create a new `Node` from the given key.
     ///
@@ -185,11 +227,11 @@ where
     }
 }
 
-impl<T> Eq for Node<T> where T: Ord {}
+impl<T> Eq for Node<T> where T: Ord + Clone {}
 
 impl<T> PartialEq for Node<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
@@ -198,7 +240,7 @@ where
 
 impl<T> PartialOrd for Node<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
@@ -207,7 +249,7 @@ where
 
 impl<T> Ord for Node<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         self.key.cmp(&other.key)
@@ -225,7 +267,7 @@ mod tests {
             return true;
         }
         let xs = xs.iter().map(|&x| Node::new(x)).collect();
-        let h = Heap::from(xs, |x, y| x > y);
+        let h = Heap::from(xs, Kind::Max);
         let x = h.nodes.borrow()[0] >= h.nodes.borrow()[1];
         x
     }
@@ -236,7 +278,7 @@ mod tests {
             return true;
         }
         let xs = xs.iter().map(|&x| Node::new(x)).collect();
-        let mut h = Heap::from(xs, |x, y| x < y);
+        let mut h = Heap::from(xs, Kind::Min);
         let s = h.size;
         let mut is_sorted = false;
         h.sort();
@@ -253,7 +295,7 @@ mod tests {
             return true;
         }
         let xs = xs.iter().map(|&x| Node::new(x)).collect();
-        let mut h = Heap::from(xs, |x, y| x > y);
+        let mut h = Heap::from(xs, Kind::Max);
         let s = h.size;
         let mut is_sorted = false;
         h.sort();
