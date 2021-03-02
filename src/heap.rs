@@ -135,8 +135,12 @@ where
     /// ```
     /// use alda::heap::{Heap, Node};
     ///
-    /// let mut h = Heap::from([0, -1, 7, -3].iter().map(|&x| Node::new(x)).collect(), |x: &Node<i32>, y: &Node<i32>| x < y);
-    /// h.sort();
+    /// let mut h = Heap::from([0, -1, 7, -3].iter()
+    ///     .map(|&x| Node::new(x))
+    ///     .collect(),
+    ///     |x: &Node<i32>, y: &Node<i32>| x < y);
+    ///
+    /// h.sort(); // sort nodes in non increasing order
     /// assert!(h.is_sorted);
     /// ```
     ///
