@@ -16,29 +16,29 @@ pub enum Kind {
 }
 
 /// Heap is a binary heap data structure.
-pub struct Heap<N>
+pub struct Heap<T>
 where
-    N: Ord + Clone,
+    T: Ord + Clone,
 {
     pub size: usize,
     pub is_sorted: bool,
 
     kind: Kind,
-    nodes: RefCell<Vec<N>>,
+    nodes: RefCell<Vec<Node<T>>>,
 }
 
-impl<N> fmt::Debug for Heap<N>
+impl<T> fmt::Debug for Heap<T>
 where
-    N: Ord + fmt::Debug + Clone,
+    T: Ord + fmt::Debug + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Heap").field("nodes", &self.nodes).finish()
     }
 }
 
-impl<N> Heap<N>
+impl<T> Heap<T>
 where
-    N: Ord + Clone,
+    T: Ord + Clone,
 {
     /// Create a new `Heap`.
 
@@ -51,12 +51,12 @@ where
     /// let h: Heap<Node<i32>> = Heap::new(Kind::Max);
     /// ```
     ///
-    pub fn new(kind: Kind) -> Heap<N> {
+    pub fn new(kind: Kind) -> Heap<T> {
         Heap {
             size: 0,
             kind,
             is_sorted: true,
-            nodes: RefCell::new(Vec::<N>::new()),
+            nodes: RefCell::new(Vec::<Node<T>>::new()),
         }
     }
 
@@ -74,13 +74,13 @@ where
     ///
     /// let h = Heap::from(vec![Node::new(1)], Kind::Max);
     ///
-    pub fn from(nodes: Vec<N>, kind: Kind) -> Heap<N> {
+    pub fn from(nodes: Vec<Node<T>>, kind: Kind) -> Heap<T> {
         assert!(nodes.len() > 0);
 
         let mut h = Heap {
             kind,
             size: nodes.len(),
-            is_sorted: true,
+            is_sorted: false,
             nodes: RefCell::new(nodes),
         };
         h.build();
@@ -111,7 +111,7 @@ where
     fn heapify(&self, index: usize) {
         let left = 2 * index + 1;
         let mut largest = index;
-        let mut predicate: Box<dyn Fn(&N, &N) -> bool> = Box::new(|x, y| x > y);
+        let mut predicate: Box<dyn Fn(&Node<T>, &Node<T>) -> bool> = Box::new(|x, y| x > y);
         if let Kind::Min = self.kind {
             predicate = Box::new(|x, y| x < y);
         }
@@ -161,7 +161,7 @@ where
         self.size = self.nodes.borrow().len();
     }
 
-    /// Return the maximum value in the heap.
+    /// Return the minimum value in the heap.
     ///
     /// # Examples
     ///
@@ -177,7 +177,7 @@ where
     /// assert_eq!(h.min(), Some(Node{key:-3}));
     /// ```
     ///
-    pub fn min(&self) -> Option<N> {
+    pub fn min(&self) -> Option<Node<T>> {
         if self.size == 0 {
             return None;
         }
@@ -191,7 +191,47 @@ where
             if self.is_sorted {
                 self.nodes.borrow().first().cloned()
             } else {
+                self.nodes
+                    .borrow()
+                    .iter()
+                    .min_by_key(|&x| x.clone().key)
+                    .cloned()
+            }
+        }
+    }
+
+    /// Return the maximum value in the Heap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use alda::heap::{Node, Kind, Heap};
+    ///
+    /// let nodes = [0, -17, -1, 9].iter().map(|&x| Node::new(x)).collect();
+    /// let mut h = Heap::from(nodes, Kind::Max);
+    /// assert_eq!(h.max(), Some(Node {key: 9}));
+    /// ```
+    pub fn max(&self) -> Option<Node<T>> {
+        if self.size == 0 {
+            return None;
+        }
+        if let Kind::Min = self.kind {
+            if self.is_sorted {
+                self.nodes.borrow().first().cloned()
+            } else {
+                self.nodes
+                    .borrow()
+                    .iter()
+                    .max_by_key(|&x| x.clone().key)
+                    .cloned()
+            }
+        } else {
+            if self.is_sorted {
                 self.nodes.borrow().last().cloned()
+            } else {
+                self.nodes.borrow().first().cloned()
             }
         }
     }
@@ -285,7 +325,6 @@ mod tests {
         for i in 0..s - 1 {
             is_sorted = h.nodes.borrow()[i] >= h.nodes.borrow()[i + 1];
         }
-
         is_sorted
     }
 
@@ -304,5 +343,48 @@ mod tests {
         }
 
         is_sorted
+    }
+
+    #[test]
+    fn test_min() {
+        let mut h = Heap::from(
+            [1, -9, 11, -3, 0, 7]
+                .iter()
+                .map(|&x| Node::new(x))
+                .collect(),
+            Kind::Min,
+        );
+        assert_eq!(h.min(), Some(Node { key: -9 }));
+        h.sort();
+        assert_eq!(h.min(), Some(Node { key: -9 }));
+    }
+
+    #[test]
+    fn test_min_max_heap() {
+        let mut h = Heap::from(
+            [1, -9, 11, -3, 0, 7]
+                .iter()
+                .map(|&x| Node::new(x))
+                .collect(),
+            Kind::Max,
+        );
+        assert_eq!(h.min(), Some(Node { key: -9 }));
+        h.sort();
+        assert_eq!(h.min(), Some(Node { key: -9 }));
+    }
+
+    #[test]
+    fn test_max() {
+        let mut h = Heap::from(
+            [1, -21, 17, 0, 11, 4]
+                .iter()
+                .map(|&x| Node::new(x))
+                .collect(),
+            Kind::Min,
+        );
+
+        assert_eq!(h.max(), Some(Node { key: 17 }));
+        h.sort();
+        assert_eq!(h.max(), Some(Node { key: 17 }));
     }
 }
