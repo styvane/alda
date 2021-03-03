@@ -299,6 +299,28 @@ where
             }
         }
     }
+
+    /// Increasse a node key in max heap while maintaining the heap property.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if the index of the node is greater than the heap size.
+    ///
+    pub fn increase_key(&mut self, key: T, position: usize) -> Result<(), &'static str> {
+        assert!(position < self.size);
+        if key < self.nodes.borrow()[position].key {
+            return Err("new key smaller than current key");
+        }
+
+        let mut pos = position;
+        self.nodes.borrow_mut()[pos] = Node::new(key);
+        let parent = position / 2;
+        while pos > 0 && self.nodes.borrow()[parent] < self.nodes.borrow()[pos] {
+            self.nodes.borrow_mut().swap(pos, parent);
+            pos = parent;
+        }
+        Ok(())
+    }
 }
 
 /// Node is a node in the heap.
