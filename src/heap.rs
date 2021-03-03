@@ -135,6 +135,10 @@ where
 
     /// Sort the the nodes in the heap.
     ///
+    /// If the heap is a min-heap, the nodes are sorted in non increasing order,
+    /// otherwise, they are sorted in increasing order.
+    /// After this operation, the heap property is no longer maintained.
+    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -158,10 +162,13 @@ where
             self.heapify(0);
         }
         self.is_sorted = true;
-        self.size = self.nodes.borrow().len();
+        self.update_size();
     }
 
     /// Return the minimum value in the heap.
+    ///
+    /// The minimum value for a min-heap or sorted max-heap is returned in O(1) time,
+    /// however on a max-heap, the worst case is O(m * n * log(n)).
     ///
     /// # Examples
     ///
@@ -200,7 +207,11 @@ where
         }
     }
 
-    /// Return the maximum value in the Heap.
+    /// Return the maximum value in the [`Heap`].
+    ///
+    /// The maximum for a max-heap or sorted min-heap is returned in O(1) time,
+    /// however on a min-heap, the worst case is O(m * n * log(n)).
+    ///
     ///
     /// # Examples
     ///
@@ -232,6 +243,59 @@ where
                 self.nodes.borrow().last().cloned()
             } else {
                 self.nodes.borrow().first().cloned()
+            }
+        }
+    }
+
+    /// Update heap size.
+    fn update_size(&mut self) {
+        self.size = self.nodes.borrow().len();
+    }
+
+    /// Extract the maximum value in the [`Heap`].
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use alda::heap::{Heap, Node, Kind};
+    ///
+    /// let mut h = Heap::from(
+    ///     [-9, 0, 7 ,1].iter().map(|&x| Node::new(x)).collect(),
+    ///     Kind::Max);
+    /// let max = h.extract_max();
+    /// ```
+    ///
+    pub fn extract_max(&mut self) -> Option<Node<T>> {
+        if self.size == 0 {
+            return None;
+        }
+        if let Kind::Min = self.kind {
+            if self.is_sorted {
+                Some(self.nodes.borrow_mut().remove(0))
+            } else {
+                let idx = self
+                    .nodes
+                    .borrow()
+                    .iter()
+                    .enumerate()
+                    .max_by_key(|(_, val)| val.key.clone())
+                    .map(|(idx, _)| idx);
+
+                let max = Some(self.nodes.borrow_mut().swap_remove(idx.unwrap()));
+                self.update_size();
+                self.build();
+                max
+            }
+        } else {
+            if self.is_sorted {
+                self.nodes.borrow_mut().pop()
+            } else {
+                let max = Some(self.nodes.borrow_mut().swap_remove(0));
+                self.update_size();
+                self.heapify(0);
+                max
             }
         }
     }
@@ -386,5 +450,17 @@ mod tests {
         assert_eq!(h.max(), Some(Node { key: 17 }));
         h.sort();
         assert_eq!(h.max(), Some(Node { key: 17 }));
+    }
+
+    #[test]
+    fn test_extract_max() {
+        let mut h = Heap::from(
+            [-7, 9, 0, 3].iter().map(|&x| Node::new(x)).collect(),
+            Kind::Min,
+        );
+
+        let max = h.extract_max();
+        assert_eq!(max, Some(Node { key: 9 }));
+        assert_eq!(h.size, 3);
     }
 }
