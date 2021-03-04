@@ -238,7 +238,46 @@ impl<'a, T: Ord + Clone> Container<'a, T> {
             }
         }
     }
+
+    /// Partition container for quick sort.
+    /// This method assumes that the container is randomized.
+    fn partition(&mut self, start: usize, end: usize) -> usize {
+        let pivot = self[end - 1].clone();
+        let mut i = start;
+        for j in start..end - 1 {
+            if self[j] <= pivot {
+                self.swap(i, j);
+                i = i + 1;
+            }
+        }
+        self.swap(i, end - 1);
+        i
+    }
+
+    /// Sort container using the quicksort.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    ///
+    /// use alda::sorts::Container;
+    ///
+    /// let mut v = vec![9, -1, 7, 0 , 3];
+    /// let n = v.len();
+    /// let mut c = Container::new(&mut v);
+    /// c.qsort(0, n);
+    /// assert_eq!(v, vec![-1, 0, 3, 7, 9]);
+    pub fn qsort(&mut self, start: usize, end: usize) {
+        if start < end {
+            let q = self.partition(start, end);
+            self.qsort(start, q);
+            self.qsort(q + 1, end);
+        }
+    }
 }
+
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
