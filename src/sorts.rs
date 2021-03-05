@@ -280,50 +280,6 @@ impl<'a, T: Ord + Clone> Container<'a, T> {
     }
 }
 
-impl Container<'_, usize> {
-    /// Sort container elements of type isize using count sort.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    ///
-    /// use alda::sorts::Container;
-    ///
-    /// let mut v = vec![2, 1, 0, 3, 5, 4];
-    /// let mut c = Container::new(&mut v);
-    /// c.countsort();
-    /// assert_eq!(v, vec![0, 1, 2, 3, 4, 5);
-    /// ```
-    ///
-    pub fn countsort(&mut self) {
-        let m = *self.iter().max().unwrap();
-        let mut counter = HashMap::<_, _>::with_capacity(m);
-        let mut new_vector = Vec::<usize>::with_capacity(m);
-        new_vector.fill(0);
-
-        for (_, &v) in self.iter().enumerate() {
-            *counter.entry(v).or_insert(0) += 1;
-        }
-
-        let mut position_counter = HashMap::<_, _>::with_capacity(m);
-
-        for (k, val) in counter.iter() {
-            position_counter
-                .entry(k)
-                .or_insert(val + counter.get(&(k - 1)).unwrap_or(&0));
-        }
-
-        for k in (0..self.len()).rev() {
-            new_vector[position_counter[&self[k]]] = self[k];
-            position_counter.entry(&self[k]).and_modify(|c| *c -= 1);
-        }
-        for i in 0..self.len() {
-            self[i] = new_vector[i];
-        }
-    }
-}
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 
