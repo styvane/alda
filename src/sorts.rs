@@ -4,7 +4,6 @@
 //!
 
 use std::cmp::Ord;
-use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
 /// Container is a container of items.
