@@ -7,6 +7,7 @@
 pub struct Stack<T> {
     items: Vec<T>,
     top: usize,
+    cap: usize,
 }
 
 impl<T> Stack<T> {
@@ -19,14 +20,15 @@ impl<T> Stack<T> {
     /// ```
     /// use alda::stack::Stack;
     ///
-    /// let s = Stack::new();
+    /// let s: Stack<isize> = Stack::new(0);
     /// assert!(s.is_empty());
     /// ```
     ///
-    pub fn new() -> Stack<T> {
+    pub fn new(capacity: usize) -> Stack<T> {
         Stack {
             items: Vec::<T>::new(),
             top: 0,
+            cap: capacity,
         }
     }
 
@@ -40,14 +42,17 @@ impl<T> Stack<T> {
     /// use alda::stack::Stack;
     ///
     /// let v = vec![1, 0, 2];
-    /// let s = Stack::from(v);
+    /// let s = Stack::from(v, 3);
     /// assert!(!s.is_empty());
-    pub fn from(items: Vec<T>) -> Stack<T> {
+    pub fn from(items: Vec<T>, capacity: usize) -> Stack<T> {
         if items.is_empty() {
-            return Self::new();
+            return Self::new(capacity);
         }
-        let n = items.len() - 1;
-        Stack { items, top: n }
+        Stack {
+            items,
+            top: 0,
+            cap: capacity,
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -63,7 +68,7 @@ impl<T> Stack<T> {
     /// ```
     /// use alda::stack::Stack;
     ///
-    /// let mut s = Stack::from(vec![1, -9, 0, 3, 7]);
+    /// let mut s = Stack::from(vec![1, -9, 0, 3, 7], 6);
     /// assert_eq!(s.pop(), Ok(7));
     /// ```
     ///
@@ -71,8 +76,9 @@ impl<T> Stack<T> {
         if self.is_empty() {
             return Err("attempt to pop empty stack");
         }
-        self.top -= 1;
-
+        if self.top > 0 {
+            self.top -= 1;
+        }
         Ok(self.items.pop().unwrap())
     }
 
@@ -85,17 +91,45 @@ impl<T> Stack<T> {
     /// ```
     /// use alda::stack::Stack;
     ///
-    /// let mut s = Stack::new();
-    ///
+    /// let mut s = Stack::new(1);
+    /// assert_eq!(s.len(), 0);
+    /// s.push(1);
+    /// assert_eq!(s.len(), 1)
     /// ```
     ///
     pub fn push(&mut self, value: T) -> Result<(), &'static str> {
-        if self.top == self.items.len() - 1 {
+        if self.len() == self.cap {
             return Err("the stack is already full");
         }
 
         self.items.push(value);
         self.top += 1;
         Ok(())
+    }
+
+    /// Return the size of the stack
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pop() {
+        let mut s = Stack::from(vec![-9, 1], 3);
+        assert_eq!(s.pop(), Ok(1));
+        assert_eq!(s.pop(), Ok(-9));
+        assert!(s.pop().is_err());
+    }
+
+    #[test]
+    fn test_push() {
+        let mut s: Stack<isize> = Stack::new(1);
+        assert_eq!(s.len(), 0);
+        assert!(s.push(3).is_ok());
+        assert!(s.push(2).is_err());
     }
 }
