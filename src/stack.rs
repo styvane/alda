@@ -3,14 +3,27 @@
 //! This module contains a basic stack data structure and operations.
 //!
 
+use std::mem;
+
+/// Link is the list to the next element on the stack.
+type Link<T> = Option<Box<Elem<T>>>;
+
 /// Stack represents the stack data structure.
-pub struct Stack<T> {
-    items: Vec<T>,
-    top: usize,
+pub struct Stack<T: Ord> {
+    top: Link<T>,
     cap: usize,
+    pub len: usize,
 }
 
-impl<T> Stack<T> {
+/// Elem represents an element on the stack.
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Elem<T: Ord> {
+    pub key: T,
+    prev: Link<T>,
+}
+
+impl<T: Ord> Stack<T> {
     /// Create new empty stack.
     ///
     /// # Examples
@@ -26,37 +39,14 @@ impl<T> Stack<T> {
     ///
     pub fn new(capacity: usize) -> Stack<T> {
         Stack {
-            items: Vec::<T>::new(),
-            top: 0,
+            top: None,
             cap: capacity,
-        }
-    }
-
-    /// Create new stack from the vector.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use alda::stack::Stack;
-    ///
-    /// let v = vec![1, 0, 2];
-    /// let s = Stack::from(v, 3);
-    /// assert!(!s.is_empty());
-    pub fn from(items: Vec<T>, capacity: usize) -> Stack<T> {
-        if items.is_empty() {
-            return Self::new(capacity);
-        }
-        Stack {
-            items,
-            top: 0,
-            cap: capacity,
+            len: 0,
         }
     }
 
     pub fn is_empty(&self) -> bool {
-        self.items.is_empty()
+        self.top.is_none()
     }
 
     /// Remove and return the item on top of the stack.
@@ -68,18 +58,26 @@ impl<T> Stack<T> {
     /// ```
     /// use alda::stack::Stack;
     ///
-    /// let mut s = Stack::from(vec![1, -9, 0, 3, 7], 6);
-    /// assert_eq!(s.pop(), Ok(7));
+    /// let mut s = Stack::new(2);
+    /// s.push(3);
+    /// s.push(1);
+    /// assert_eq!(s.pop().unwrap().key, 1);
     /// ```
     ///
-    pub fn pop(&mut self) -> Result<T, &'static str> {
+    pub fn pop(&mut self) -> Result<Elem<T>, &'static str> {
         if self.is_empty() {
             return Err("attempt to pop empty stack");
         }
-        if self.top > 0 {
-            self.top -= 1;
+        self.len -= 1;
+        let mut v = self.top.take().unwrap();
+        let prev = v.prev;
+        v.prev = None;
+
+        if let Some(prev) = prev {
+            self.top = Some(prev);
         }
-        Ok(self.items.pop().unwrap())
+
+        Ok(*v)
     }
 
     /// Push an item into the stack.
@@ -92,24 +90,24 @@ impl<T> Stack<T> {
     /// use alda::stack::Stack;
     ///
     /// let mut s = Stack::new(1);
-    /// assert_eq!(s.len(), 0);
+    /// assert!(s.is_empty());
     /// s.push(1);
-    /// assert_eq!(s.len(), 1)
+    /// assert_eq!(s.len, 1)
     /// ```
     ///
-    pub fn push(&mut self, value: T) -> Result<(), &'static str> {
-        if self.len() == self.cap {
+    pub fn push(&mut self, key: T) -> Result<(), &'static str> {
+        if self.len == self.cap {
             return Err("the stack is already full");
         }
 
-        self.items.push(value);
-        self.top += 1;
+        self.len += 1;
+        let old_top = mem::replace(&mut self.top, Some(Box::new(Elem { key, prev: None })));
+        if let Some(old_top) = old_top {
+            let mut top = self.top.take().unwrap();
+            top.prev = Some(old_top);
+            self.top = Some(top);
+        }
         Ok(())
-    }
-
-    /// Return the size of the stack
-    pub fn len(&self) -> usize {
-        self.items.len()
     }
 }
 
@@ -119,16 +117,18 @@ mod tests {
 
     #[test]
     fn test_pop() {
-        let mut s = Stack::from(vec![-9, 1], 3);
-        assert_eq!(s.pop(), Ok(1));
-        assert_eq!(s.pop(), Ok(-9));
+        let mut s = Stack::new(2);
+        assert!(s.push(-9).is_ok());
+        assert!(s.push(1).is_ok());
+        assert_eq!(s.pop().unwrap().key, 1);
+        assert_eq!(s.pop().unwrap().key, -9);
         assert!(s.pop().is_err());
     }
 
     #[test]
     fn test_push() {
         let mut s: Stack<isize> = Stack::new(1);
-        assert_eq!(s.len(), 0);
+        assert_eq!(s.len, 0);
         assert!(s.push(3).is_ok());
         assert!(s.push(2).is_err());
     }
