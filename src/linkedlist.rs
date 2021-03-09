@@ -3,15 +3,17 @@
 //! This module contains a double linked list operations.
 
 use std::cmp::Ordering;
+use std::fmt::Debug;
 use std::ptr::NonNull;
 
 /// LinkedList represents a linked list data structure.
-pub struct LinkedList<T: Ord> {
+#[derive(Debug)]
+pub struct LinkedList<T: Ord + Debug> {
     head: Option<NonNull<Node<T>>>,
     size: usize,
 }
 
-impl<T: Ord> LinkedList<T> {
+impl<T: Ord + Debug> LinkedList<T> {
     /// Create a new empty link list.
     pub fn new() -> LinkedList<T> {
         LinkedList {
@@ -66,8 +68,8 @@ impl<T: Ord> LinkedList<T> {
                 (*head.as_ptr()).prev = NonNull::new(&mut node as *mut Node<T>);
             }
         }
-        node.prev = None;
         self.head = NonNull::new(&mut node as *mut Node<T>);
+        node.prev = None;
         self.size += 1;
     }
 
@@ -88,34 +90,56 @@ impl<T: Ord> LinkedList<T> {
     pub fn len(&self) -> usize {
         self.size
     }
+
+    /// Delete a node from the linked list.
+    ///
+    /// # Safety
+    /// The node must be in the linked list.
+    ///
+    pub fn delete(&mut self, node: &Node<T>) -> Result<(), &'static str> {
+        if let Some(prev) = node.prev {
+            unsafe {
+                (*prev.as_ptr()).next = node.next;
+            }
+        } else {
+            self.head = node.next;
+        }
+
+        if let Some(ref next) = node.next {
+            unsafe {
+                (*next.as_ptr()).prev = node.prev;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Node is a node in the linked list
 #[derive(Debug, Eq)]
-pub struct Node<T: Ord> {
+pub struct Node<T: Ord + Debug> {
     key: T,
     next: Option<NonNull<Node<T>>>,
     prev: Option<NonNull<Node<T>>>,
 }
 
-impl<T: Ord> Ord for Node<T> {
+impl<T: Ord + Debug> Ord for Node<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.key.cmp(&other.key)
     }
 }
 
-impl<T: Ord> PartialOrd for Node<T> {
+impl<T: Ord + Debug> PartialOrd for Node<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T: Ord> PartialEq for Node<T> {
+impl<T: Ord + Debug> PartialEq for Node<T> {
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
     }
 }
-impl<T: Ord> Node<T> {
+impl<T: Ord + Debug> Node<T> {
     /// Create a new node.
     pub fn new(key: T) -> Node<T> {
         Node {
@@ -152,21 +176,22 @@ mod tests {
         let mut link = LinkedList::new();
         xs.iter().for_each(|&x| link.insert(Node::new(x)));
         vc.iter()
-            .for_each(|&x| assert_eq!(link.search(&x).unwrap().key, x));
+            .for_each(|x| assert_eq!(link.search(x).unwrap().key, *x));
         true
     }
 
     #[test]
-    fn test_insert_node() {
+    fn test_insert_one_node() {
         let mut link = LinkedList::new();
         assert_eq!(link.len(), 0);
         link.insert(Node::new(7));
         assert_eq!(link.len(), 1);
     }
 
-    #[test]
-    fn test_delete_node() {}
-
-    #[test]
-    fn test_reverse_list() {}
+    #[quickcheck]
+    fn test_insert_many_node(xs: Vec<isize>) -> bool {
+        let mut lst = LinkedList::new();
+        xs.iter().for_each(|&x| lst.insert(Node::new(x)));
+        true
+    }
 }
