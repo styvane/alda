@@ -5,3 +5,4 @@ pub mod queue;
 pub mod search;
 pub mod sorts;
 pub mod stack;
+pub mod tree;
