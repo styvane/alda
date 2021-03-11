@@ -84,7 +84,29 @@ where
     /// let root = Some(Node::new(9));
     /// tree.root = root;
     ///```
-    pub fn search(&self) -> Option<Rc<RefCell<Node<T>>>> {
+    pub fn search(&self, key: &T) -> Option<Rc<RefCell<Node<T>>>> {
+        fn find<T: Ord + fmt::Debug + Clone>(
+            key: &T,
+            node: Rc<RefCell<Node<T>>>,
+        ) -> Option<Rc<RefCell<Node<T>>>> {
+            if &node.borrow().key == key {
+                return Some(node);
+            } else if &node.borrow().key > key {
+                if let Some(left) = node.borrow().left.clone() {
+                    return find(&key, left);
+                }
+            } else {
+                if let Some(right) = node.borrow().right.clone() {
+                    return find(&key, right);
+                }
+            }
+
+            None
+        }
+
+        if let Some(ref root) = self.root {
+            return find(&key, root.clone());
+        }
         None
     }
 }
@@ -184,22 +206,51 @@ mod tests {
         assert_eq!(String::from_utf8(out).unwrap(), "234");
     }
 
-    // #[test]
-    // fn test_search() {
-    //     let mut tree = BinaryTree::new();
-    //     let mut root = Node::new(5);
-    //     let mut left = Node::new(4);
-    //     let parent = &Rc::new(RefCell::new(root));
-    //     left.parent = Some(Rc::downgrade(parent));
-    //     left.left = Some(Rc::new(RefCell::new(Node::new(3))));
-    //     root.left = Some(Rc::new(RefCell::new(left)));
-    //     let mut right = Node::new(6);
-    //     right.left = Some(Rc::new(RefCell::new(Node::new(2))));
-    //     root.right = Some(Rc::new(RefCell::new(right)));
-    //     Some(Rc::downgrade(parent));
-    //     tree.root = Some(root);
+    #[test]
+    fn test_search() {
+        let mut tree = BinaryTree::new();
+        let root = Node::new(7);
 
-    // assert_eq!(tree.search(2).unwrap().parent.unwrap().borrow().key, 6);
-    // assert_eq!(tree.search(4).unwrap().left.unwrap().borrow().key, 3);
-    // }
+        let left_child = Node::new(5);
+        left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
+        let lc = Node::new(4);
+        lc.borrow_mut().parent = Some(Rc::downgrade(&left_child));
+        left_child.borrow_mut().left = Some(lc);
+
+        root.borrow_mut().left = Some(left_child);
+
+        let right = Node::new(9);
+        let rc = Node::new(8);
+        rc.borrow_mut().parent = Some(Rc::downgrade(&right));
+        right.borrow_mut().left = Some(rc);
+
+        root.borrow_mut().right = Some(right);
+        println!("{:#?}", root);
+        tree.root = Some(root);
+
+        assert_eq!(
+            tree.search(&8)
+                .unwrap()
+                .borrow()
+                .parent
+                .as_ref()
+                .unwrap()
+                .upgrade()
+                .unwrap()
+                .borrow()
+                .key,
+            9
+        );
+        assert_eq!(
+            tree.search(&5)
+                .unwrap()
+                .borrow()
+                .left
+                .as_ref()
+                .unwrap()
+                .borrow()
+                .key,
+            4
+        );
+    }
 }
