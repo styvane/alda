@@ -109,6 +109,33 @@ where
         }
         None
     }
+
+    /// Iteratively search for a node with the given key.
+    pub fn iterative_search(&self, key: &T) -> Option<Rc<RefCell<Node<T>>>> {
+        if self.root.is_none() {
+            return None;
+        }
+        let mut current = self.root.clone().unwrap();
+        loop {
+            if &current.borrow().key == key {
+                return Some(current);
+            } else if key < &current.borrow().key {
+                let lc = current.borrow().left.clone();
+                if let Some(left) = lc {
+                    current = left;
+                } else {
+                    return None;
+                }
+            } else {
+                let rc = current.borrow().right.clone();
+                if let Some(right) = rc {
+                    current = right;
+                } else {
+                    return None;
+                }
+            }
+        }
+    }
 }
 
 /// Node represents a node in the binary tree.
@@ -225,7 +252,7 @@ mod tests {
         right.borrow_mut().left = Some(rc);
 
         root.borrow_mut().right = Some(right);
-        println!("{:#?}", root);
+
         tree.root = Some(root);
 
         assert_eq!(
@@ -243,6 +270,54 @@ mod tests {
         );
         assert_eq!(
             tree.search(&5)
+                .unwrap()
+                .borrow()
+                .left
+                .as_ref()
+                .unwrap()
+                .borrow()
+                .key,
+            4
+        );
+    }
+
+    #[test]
+    fn test_iterative_search() {
+        let mut tree = BinaryTree::new();
+        let root = Node::new(7);
+
+        let left_child = Node::new(5);
+        left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
+        let lc = Node::new(4);
+        lc.borrow_mut().parent = Some(Rc::downgrade(&left_child));
+        left_child.borrow_mut().left = Some(lc);
+
+        root.borrow_mut().left = Some(left_child);
+
+        let right = Node::new(9);
+        let rc = Node::new(8);
+        rc.borrow_mut().parent = Some(Rc::downgrade(&right));
+        right.borrow_mut().left = Some(rc);
+
+        root.borrow_mut().right = Some(right);
+
+        tree.root = Some(root);
+
+        assert_eq!(
+            tree.iterative_search(&8)
+                .unwrap()
+                .borrow()
+                .parent
+                .as_ref()
+                .unwrap()
+                .upgrade()
+                .unwrap()
+                .borrow()
+                .key,
+            9
+        );
+        assert_eq!(
+            tree.iterative_search(&5)
                 .unwrap()
                 .borrow()
                 .left
