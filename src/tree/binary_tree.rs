@@ -1,7 +1,6 @@
-//! Tree data structures.
+//! Binary Tree data structures.
 //!
-//! This module contains different tree data structures and the
-//! operations that can be performed on them.
+//! This module is an attempt to implement the binary tree data structure.
 
 use std::cell::RefCell;
 use std::cmp::{Ord, Ordering, PartialEq, PartialOrd};
@@ -12,7 +11,7 @@ use std::rc::{Rc, Weak};
 /// BinaryTree represents a binary tree data structure.
 pub struct BinaryTree<T>
 where
-    T: Ord + fmt::Debug + Clone + Ord,
+    T: Ord + fmt::Debug + Clone,
 {
     pub root: Option<Rc<RefCell<Node<T>>>>,
 }
@@ -22,7 +21,7 @@ type Child<T> = Option<Rc<RefCell<Node<T>>>>;
 
 impl<T> BinaryTree<T>
 where
-    T: Ord + fmt::Debug + Clone + Ord,
+    T: Ord + fmt::Debug + Clone,
 {
     /// Create a new binary tree.
     pub fn new() -> Self {
@@ -159,6 +158,38 @@ where
             x = node;
         }
         Some(x)
+    }
+
+    /// Return the successor for a node with the given key.
+    pub fn successor(&self, key: &T) -> Option<Rc<RefCell<Node<T>>>> {
+        if let Some(node) = self.iterative_search(&key) {
+            if let Some(_) = node.borrow().right {
+                let mut tree = BinaryTree::new();
+                tree.root = node.borrow().right.clone();
+                return tree.min();
+            } else {
+                let mut node = node.clone();
+                let mut parent = node.borrow().parent.clone();
+                while let Some(ref p) = parent {
+                    let ptr = p.upgrade().unwrap().as_ptr();
+                    unsafe {
+                        if (*ptr).right.is_none() {
+                            return Some(p.upgrade().unwrap());
+                        } else {
+                            if let Some(ref rs) = (*ptr).right {
+                                if &rs.borrow().key == key {
+                                    node = p.upgrade().unwrap();
+                                    parent = node.borrow().parent.clone();
+                                }
+                            }
+                        }
+                    }
+                }
+                return None;
+            }
+        } else {
+            return None;
+        }
     }
 }
 
@@ -348,5 +379,12 @@ mod tests {
     fn test_minimum() {
         let tree = new_tree();
         assert_eq!(tree.min().unwrap().borrow().key, 4);
+    }
+
+    #[test]
+    fn test_successor() {
+        let tree = new_tree();
+        assert_eq!(tree.successor(&8).unwrap().borrow().key, 9);
+        assert!(tree.successor(&9).is_none());
     }
 }
