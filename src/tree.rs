@@ -257,11 +257,10 @@ mod tests {
         assert_eq!(String::from_utf8(out).unwrap(), "234");
     }
 
-    #[test]
-    fn test_search() {
+    fn new_tree() -> BinaryTree<isize> {
         let mut tree = BinaryTree::new();
-        let root = Node::new(7);
 
+        let root = Node::new(7);
         let left_child = Node::new(5);
         left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
         let lc = Node::new(4);
@@ -278,7 +277,12 @@ mod tests {
         root.borrow_mut().right = Some(right);
 
         tree.root = Some(root);
+        return tree;
+    }
 
+    #[test]
+    fn test_search() {
+        let tree = new_tree();
         assert_eq!(
             tree.search(&8)
                 .unwrap()
@@ -307,26 +311,7 @@ mod tests {
 
     #[test]
     fn test_iterative_search() {
-        let mut tree = BinaryTree::new();
-        let root = Node::new(7);
-
-        let left_child = Node::new(5);
-        left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
-        let lc = Node::new(4);
-        lc.borrow_mut().parent = Some(Rc::downgrade(&left_child));
-        left_child.borrow_mut().left = Some(lc);
-
-        root.borrow_mut().left = Some(left_child);
-
-        let right = Node::new(9);
-        let rc = Node::new(8);
-        rc.borrow_mut().parent = Some(Rc::downgrade(&right));
-        right.borrow_mut().left = Some(rc);
-
-        root.borrow_mut().right = Some(right);
-
-        tree.root = Some(root);
-
+        let tree = new_tree();
         assert_eq!(
             tree.iterative_search(&8)
                 .unwrap()
@@ -355,51 +340,13 @@ mod tests {
 
     #[test]
     fn test_maximum() {
-        let mut tree = BinaryTree::new();
-        let root = Node::new(7);
-
-        let left_child = Node::new(5);
-        left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
-        let lc = Node::new(4);
-        lc.borrow_mut().parent = Some(Rc::downgrade(&left_child));
-        left_child.borrow_mut().left = Some(lc);
-
-        root.borrow_mut().left = Some(left_child);
-
-        let right = Node::new(9);
-        let rc = Node::new(8);
-        rc.borrow_mut().parent = Some(Rc::downgrade(&right));
-        right.borrow_mut().left = Some(rc);
-
-        root.borrow_mut().right = Some(right);
-
-        tree.root = Some(root);
-
+        let tree = new_tree();
         assert_eq!(tree.max().unwrap().borrow().key, 9);
     }
 
     #[test]
     fn test_minimum() {
-        let mut tree = BinaryTree::new();
-        let root = Node::new(7);
-
-        let left_child = Node::new(5);
-        left_child.borrow_mut().parent = Some(Rc::downgrade(&root));
-        let lc = Node::new(4);
-        lc.borrow_mut().parent = Some(Rc::downgrade(&left_child));
-        left_child.borrow_mut().left = Some(lc);
-
-        root.borrow_mut().left = Some(left_child);
-
-        let right = Node::new(9);
-        let rc = Node::new(8);
-        rc.borrow_mut().parent = Some(Rc::downgrade(&right));
-        right.borrow_mut().left = Some(rc);
-
-        root.borrow_mut().right = Some(right);
-
-        tree.root = Some(root);
-
+        let tree = new_tree();
         assert_eq!(tree.min().unwrap().borrow().key, 4);
     }
 }
