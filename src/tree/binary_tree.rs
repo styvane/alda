@@ -191,6 +191,59 @@ where
             return None;
         }
     }
+
+    /// Insert a new with the key in the tree.
+    pub fn insert(&mut self, key: T) {
+        let new_node = Node::new(key);
+
+        let mut node = self.root.clone();
+        while let Some(n) = node.clone() {
+            new_node.borrow_mut().parent = Some(Rc::downgrade(&n));
+            if &new_node.borrow().key < &n.borrow().key {
+                node = n.borrow().left.clone();
+            } else {
+                node = n.borrow().right.clone();
+            }
+        }
+        if new_node.borrow().parent.is_none() {
+            self.root = Some(new_node);
+        } else if &new_node.borrow().key
+            < &new_node
+                .borrow()
+                .parent
+                .clone()
+                .unwrap()
+                .upgrade()
+                .unwrap()
+                .as_ref()
+                .borrow()
+                .key
+        {
+            new_node
+                .borrow_mut()
+                .parent
+                .clone()
+                .unwrap()
+                .upgrade()
+                .unwrap()
+                .as_ref()
+                .borrow_mut()
+                .left = Some(new_node.clone());
+        } else {
+            {
+                new_node
+                    .borrow_mut()
+                    .parent
+                    .clone()
+                    .unwrap()
+                    .upgrade()
+                    .unwrap()
+                    .as_ref()
+                    .borrow_mut()
+                    .right = Some(new_node.clone());
+            }
+        }
+    }
 }
 
 /// Node represents a node in the binary tree.
@@ -386,5 +439,28 @@ mod tests {
         let tree = new_tree();
         assert_eq!(tree.successor(&8).unwrap().borrow().key, 9);
         assert!(tree.successor(&9).is_none());
+    }
+
+    #[test]
+    fn test_insert() {
+        let mut tree = BinaryTree::new();
+        tree.insert(0);
+        assert_eq!(tree.root.unwrap().borrow().key, 0);
+
+        let mut tree = new_tree();
+        tree.insert(14);
+        assert_eq!(
+            tree.search(&14)
+                .unwrap()
+                .borrow()
+                .parent
+                .as_ref()
+                .unwrap()
+                .upgrade()
+                .unwrap()
+                .borrow()
+                .key,
+            9
+        )
     }
 }
