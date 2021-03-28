@@ -57,4 +57,12 @@ mod tests {
         assert_eq!(rod.recursive_maximum(9), 25);
         assert_eq!(rod.recursive_maximum(10), 30);
     }
+
+    #[test]
+    fn test_recursive_maximum_empty() {
+        let v = vec![];
+        let rod = Rod::new(&v);
+
+        assert_eq!(rod.recursive_maximum(1), 0);
+    }
 }
