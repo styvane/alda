@@ -27,7 +27,7 @@ impl<'a> Rod<'a> {
                 .iter()
                 .enumerate()
                 .skip(1)
-                .take_while(|(i, _)| i <= &size)
+                .take_while(|&(i, _)| i <= size)
             {
                 max = cmp::max(max, value + compute_maximum(prices, size - i))
             }
@@ -56,15 +56,37 @@ impl<'a> Rod<'a> {
                 .iter()
                 .enumerate()
                 .skip(1)
-                .take_while(|(i, _)| i <= &size)
+                .take_while(|&(i, _)| i <= size)
             {
                 max = cmp::max(max, value + memoize_max(prices, size - i, cache));
             }
-            cache.entry(size).or_insert(max);
+            cache.insert(size, max);
             max
         }
 
         memoize_max(self.prices, size, &mut cache)
+    }
+
+    /// Find the maximum revenue for cutting a rod and selling
+    /// it pieces using the bottom up approach.
+    pub fn maximum_with_bottom_up(&self, size: usize) -> usize {
+        let mut cache = HashMap::<usize, usize>::new();
+        cache.insert(0, 0);
+        for (ix, value) in self
+            .prices
+            .iter()
+            .enumerate()
+            .skip(1)
+            .take_while(|&(i, _)| i <= size)
+        {
+            let mut max = 0;
+            for j in 1..=ix {
+                max = cmp::max(max, value + self.prices[ix - j]);
+            }
+            cache.insert(ix, max);
+        }
+
+        cache[&size]
     }
 }
 
