@@ -70,7 +70,7 @@ impl<'a> Rod<'a> {
     /// Find the maximum revenue for cutting a rod and selling
     /// it pieces using the bottom up approach.
     pub fn maximum_with_bottom_up(&self, size: usize) -> usize {
-        let mut cache = HashMap::<usize, usize>::new();
+        let mut cache = HashMap::new();
         cache.insert(0, 0);
         for (ix, value) in self
             .prices
@@ -81,12 +81,47 @@ impl<'a> Rod<'a> {
         {
             let mut max = 0;
             for j in 1..=ix {
-                max = cmp::max(max, value + self.prices[ix - j]);
+                max = cmp::max(max, value + cache[&(ix - j)]);
             }
             cache.insert(ix, max);
         }
 
         cache[&size]
+    }
+
+    /// List the pieces sizes that led to the maximum revenue.
+    pub fn list_size(&self, size: usize) -> Vec<usize> {
+        let mut sizes = HashMap::new();
+        let mut cache = HashMap::new();
+        cache.insert(0, 0);
+        for index in 1..size + 1 {
+            let mut max = 0;
+            for (jx, value) in self
+                .prices
+                .iter()
+                .enumerate()
+                .skip(1)
+                .take_while(|&(i, _)| i <= index)
+            {
+                if max < value + cache[&(index - jx)] {
+                    max = value + cache[&(index - jx)];
+                    sizes.insert(index, jx);
+                }
+            }
+            cache.insert(index, max);
+        }
+
+        let mut pieces = vec![];
+        let mut n = size;
+
+        while n > 0 {
+            pieces.push(sizes[&n]);
+            n -= sizes[&n];
+        }
+
+        println!("{:?}", sizes);
+
+        pieces
     }
 }
 
@@ -134,5 +169,22 @@ mod tests {
         assert_eq!(rod.maximum_with_memoization(8), 22);
         assert_eq!(rod.maximum_with_memoization(9), 25);
         assert_eq!(rod.maximum_with_memoization(10), 30);
+    }
+
+    #[test]
+    fn test_list_size() {
+        let v = vec![0, 1, 5, 8, 9, 10, 17, 17, 20, 24, 30];
+        let rod = Rod::new(&v);
+
+        assert_eq!(rod.list_size(1), [1]);
+        assert_eq!(rod.list_size(2), [2]);
+        assert_eq!(rod.list_size(3), [3]);
+        assert_eq!(rod.list_size(4), [2, 2]);
+        assert_eq!(rod.list_size(5), [2, 3]);
+        assert_eq!(rod.list_size(6), [6]);
+        assert_eq!(rod.list_size(7), [1, 6]);
+        assert_eq!(rod.list_size(8), [2, 6]);
+        assert_eq!(rod.list_size(9), [3, 6]);
+        assert_eq!(rod.list_size(10), [10]);
     }
 }
