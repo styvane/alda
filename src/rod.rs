@@ -72,20 +72,21 @@ impl<'a> Rod<'a> {
     pub fn maximum_with_bottom_up(&self, size: usize) -> usize {
         let mut cache = HashMap::new();
         cache.insert(0, 0);
-        for (ix, value) in self
-            .prices
-            .iter()
-            .enumerate()
-            .skip(1)
-            .take_while(|&(i, _)| i <= size)
-        {
-            let mut max = 0;
-            for j in 1..=ix {
-                max = cmp::max(max, value + cache[&(ix - j)]);
-            }
-            cache.insert(ix, max);
-        }
 
+        for index in 1..=size {
+            let mut max = 0;
+
+            for (ix, value) in self
+                .prices
+                .iter()
+                .enumerate()
+                .skip(1)
+                .take_while(|&(i, _)| i <= size)
+            {
+                max = cmp::max(max, value + cache[&(index - ix)]);
+            }
+            cache.insert(index, max);
+        }
         cache[&size]
     }
 
@@ -94,7 +95,7 @@ impl<'a> Rod<'a> {
         let mut sizes = HashMap::new();
         let mut cache = HashMap::new();
         cache.insert(0, 0);
-        for index in 1..size + 1 {
+        for index in 1..=size {
             let mut max = 0;
             for (jx, value) in self
                 .prices
@@ -119,9 +120,30 @@ impl<'a> Rod<'a> {
             n -= sizes[&n];
         }
 
-        println!("{:?}", sizes);
-
         pieces
+    }
+
+    /// Find the maximum for cutting a rod an selling it pieces
+    /// with an additional cost for each cut.
+    pub fn maximum_with_cut_cost(&self, size: usize, cost: usize) -> usize {
+        let mut cache = HashMap::new();
+        cache.insert(0, 0);
+
+        for index in 1..=size {
+            let mut max = 0;
+            for (ix, value) in self
+                .prices
+                .iter()
+                .enumerate()
+                .skip(1)
+                .take_while(|&(ix, _)| ix <= size)
+            {
+                max = cmp::max(max, value + cache[&(index - ix)] - cost);
+            }
+            cache.insert(index, max);
+        }
+
+        cache[&size]
     }
 }
 
