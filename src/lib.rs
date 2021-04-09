@@ -1,6 +1,7 @@
 pub mod binary;
 pub mod fib;
 pub mod heap;
+pub mod lcs;
 pub mod linkedlist;
 pub mod queue;
 pub mod rod;
