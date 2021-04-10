@@ -1,3 +1,4 @@
+pub mod activity_selector;
 pub mod binary;
 pub mod fib;
 pub mod heap;
