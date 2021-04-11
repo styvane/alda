@@ -2,10 +2,10 @@
 name = "alda"
 version = "0.0.0"
 publish = false
-authors = ["Styvane Soukossi <mstyvane@gmail.com>"]
+authors = ["Styvane Soukossi <styvane@acm.org>"]
 edition = "2018"
 keywords = ["algorithms", "data structure"]
-description = "Various data structure and algorithm implementation for learning purpose"
+description = "Algorithms and data structures implementation for learning purpose"
 
 [dependencies]
 num-traits = "0.2"

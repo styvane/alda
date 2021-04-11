@@ -1,3 +1,3 @@
 ## Alda 
 
-An attempt to implement various algorithm and data structures in Rust for learning purpose.
+An attempt to implement various algorithms and data structures in Rust for learning purpose.
