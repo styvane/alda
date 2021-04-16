@@ -9,10 +9,7 @@ use std::io::Write;
 use std::rc::{Rc, Weak};
 
 /// BinaryTree represents a binary tree data structure.
-pub struct BinaryTree<T>
-where
-    T: Ord + fmt::Debug + Clone,
-{
+pub struct BinaryTree<T> {
     pub root: Option<Rc<RefCell<Node<T>>>>,
 }
 
@@ -248,10 +245,7 @@ where
 
 /// Node represents a node in the binary tree.
 #[derive(Clone, Debug)]
-pub struct Node<T>
-where
-    T: Ord + fmt::Debug + Clone,
-{
+pub struct Node<T> {
     key: T,
     left: Child<T>,
     right: Child<T>,

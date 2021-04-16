@@ -3,7 +3,7 @@
 //! This module contains basic queue data structure and operation.
 
 /// Queue represents the queue data structure.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Queue<T> {
     elements: Vec<T>,
     head: usize,

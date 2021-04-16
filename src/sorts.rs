@@ -7,7 +7,7 @@ use std::cmp::Ord;
 use std::ops::{Deref, DerefMut};
 
 /// Container is a container of items.
-pub struct Container<'a, T: Ord + Clone>(&'a mut [T]);
+pub struct Container<'a, T>(&'a mut [T]);
 
 impl<'a, T: Ord + Clone> Deref for Container<'a, T> {
     type Target = [T];

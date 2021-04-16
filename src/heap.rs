@@ -5,21 +5,18 @@
 //!
 
 use std::cell::RefCell;
-use std::cmp::{Ord, Ordering};
 use std::fmt;
 
 /// The [`Kind`] type represents the heap type.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Kind {
     Min,
     Max,
 }
 
 /// Heap is a binary heap data structure.
-pub struct Heap<T>
-where
-    T: Ord + Clone,
-{
+#[derive(Clone)]
+pub struct Heap<T> {
     pub size: usize,
     pub is_sorted: bool,
 
@@ -324,18 +321,12 @@ where
 }
 
 /// Node is a node in the heap.
-#[derive(Debug, Clone)]
-pub struct Node<T>
-where
-    T: Ord + Clone,
-{
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
+pub struct Node<T> {
     pub key: T,
 }
 
-impl<T> Node<T>
-where
-    T: Ord + Clone,
-{
+impl<T> Node<T> {
     /// Create a new `Node` from the given key.
     ///
     /// #  Examples
@@ -353,34 +344,6 @@ where
     }
 }
 
-impl<T> Eq for Node<T> where T: Ord + Clone {}
-
-impl<T> PartialEq for Node<T>
-where
-    T: Ord + Clone,
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.key == other.key
-    }
-}
-
-impl<T> PartialOrd for Node<T>
-where
-    T: Ord + Clone,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl<T> Ord for Node<T>
-where
-    T: Ord + Clone,
-{
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.key.cmp(&other.key)
-    }
-}
 #[cfg(test)]
 use quickcheck_macros::quickcheck;
 

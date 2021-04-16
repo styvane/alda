@@ -9,7 +9,7 @@ use std::mem;
 type Link<T> = Option<Box<Elem<T>>>;
 
 /// Stack represents the stack data structure.
-pub struct Stack<T: Ord> {
+pub struct Stack<T> {
     top: Link<T>,
     cap: usize,
     pub len: usize,
@@ -18,7 +18,7 @@ pub struct Stack<T: Ord> {
 /// Elem represents an element on the stack.
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct Elem<T: Ord> {
+pub struct Elem<T> {
     pub key: T,
     prev: Link<T>,
 }
