@@ -1,0 +1,10 @@
+[package]
+name = "alda"
+version = "0.1.0"
+edition = "2021"
+authors = ["styvane <4968379+styvane@users.noreply.github.com>"]
+description = "Algorithms and data structures"
+repository = "https://github.com/styvane/alda"
+rust-version = "1.64"
+
+[dependencies]
