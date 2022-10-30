@@ -8,3 +8,8 @@ repository = "https://github.com/styvane/alda"
 rust-version = "1.64"
 
 [dependencies]
+
+
+[dev-dependencies]
+quickcheck = "1"
+quickcheck_macros = "1"
