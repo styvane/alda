@@ -2,10 +2,7 @@
 //!
 //! This module implements various sorting algorithms.
 
-use std::{
-    ops::{Index, IndexMut},
-    usize,
-};
+use std::ops::{Index, IndexMut};
 
 /// The [`Container`] type is a wrapper around the containing data.
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
@@ -14,8 +11,12 @@ pub struct Container<T> {
 }
 
 impl<T> Container<T> {
+    /// Creates new container instance.
+    pub fn new(data: Vec<T>) -> Self {
+        Self { data }
+    }
     /// Return the number of items in the container.
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.data.len()
     }
 
@@ -42,7 +43,7 @@ impl<T> IndexMut<usize> for Container<T> {
 ///
 /// The [`Sort`] trait defines the various mechanism for sorting a
 /// container.
-trait Sort {
+pub trait Sort {
     /// Cormen, Charles, Ronald and Clifford insertion sort algorithm.
     ///
     /// Sort the elements in the container using CLRS insertion sort

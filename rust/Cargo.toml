@@ -6,10 +6,16 @@ authors = ["styvane <4968379+styvane@users.noreply.github.com>"]
 description = "Algorithms and data structures"
 repository = "https://github.com/styvane/alda"
 rust-version = "1.64"
+license = "MIT OR Apache-2.0"
+categories = ["algorithms", "data-structures"]
 
-[dependencies]
-
+[[bench]]
+name = "sort"
+harness = false
 
 [dev-dependencies]
 quickcheck = "1"
 quickcheck_macros = "1"
+criterion = "0.4"
+fake = "2.5"
+rand = "0.8"
