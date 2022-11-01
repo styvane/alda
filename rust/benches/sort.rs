@@ -15,7 +15,7 @@ fn sorting_benchmark(c: &mut Criterion) {
             |b, i| {
                 b.iter(|| {
                     let mut container = i.clone();
-                    container.clrs_insertion();
+                    container.clrs_insertion(|a, b| a > b);
                 })
             },
         );
@@ -26,7 +26,7 @@ fn sorting_benchmark(c: &mut Criterion) {
             |b, i| {
                 b.iter(|| {
                     let mut container = i.clone();
-                    container.clrs_insertion();
+                    container.insertion(|a, b| a > b);
                 })
             },
         );

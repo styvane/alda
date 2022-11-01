@@ -49,29 +49,30 @@ impl<T> IndexMut<usize> for Container<T> {
 ///
 /// The [`Sort`] trait defines the various mechanism for sorting a
 /// container.
-pub trait Sort {
+pub trait Sort<E> {
     /// Cormen, Charles, Ronald and Clifford insertion sort algorithm.
     ///
     /// Sort the elements in the container using CLRS insertion sort
     /// algorithm in 3rd Edition.
-    fn clrs_insertion(&mut self);
+    fn clrs_insertion(&mut self, compare: impl Fn(&E, &E) -> bool);
 
     /// Alternative version of CLRS insertion algorithm.
-    fn insertion(&mut self);
+    fn insertion(&mut self, compare: impl Fn(&E, &E) -> bool);
 }
 
-impl<T> Sort for Container<T>
+impl<E> Sort<E> for Container<E>
 where
-    T: Eq + PartialEq + PartialOrd + Ord + Clone,
+    E: Eq + PartialEq + PartialOrd + Ord + Clone,
 {
-    fn clrs_insertion(&mut self) {
+    fn clrs_insertion(&mut self, compare: impl Fn(&E, &E) -> bool) {
         if self.len() <= 1 {
             return;
         }
         for j in 1..self.len() {
             let key = self[j].clone();
             let mut i = j - 1;
-            while self[i] > key {
+
+            while compare(&self[i], &key) {
                 self.swap(i + 1, i);
                 if i == 0 {
                     break;
@@ -81,14 +82,14 @@ where
         }
     }
 
-    fn insertion(&mut self) {
+    fn insertion(&mut self, compare: impl Fn(&E, &E) -> bool) {
         if self.len() <= 1 {
             return;
         }
         for j in 1..self.len() {
             let key = self[j].clone();
             for i in (0..j).rev() {
-                if self[i] > key {
+                if compare(&self[i], &key) {
                     self.swap(i, i + 1);
                 }
             }
@@ -111,18 +112,34 @@ mod tests {
     }
 
     #[quickcheck]
-    fn test_clrs_insertion_sort(mut container: Container<i32>) -> bool {
+    fn test_clrs_insertion_sort_ascending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort();
-        container.clrs_insertion();
+        container.clrs_insertion(|a, b| a > b);
         Container { data } == container
     }
 
     #[quickcheck]
-    fn insertion_sort(mut container: Container<i32>) -> bool {
+    fn test_clrs_insertion_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort();
-        container.insertion();
+        container.clrs_insertion(|a, b| a < b);
+        Container { data } == container
+    }
+
+    #[quickcheck]
+    fn insertion_sort_ascending(mut container: Container<i32>) -> bool {
+        let mut data = container.data.clone();
+        data.sort();
+        container.insertion(|a, b| a > b);
+        Container { data } == container
+    }
+
+    #[quickcheck]
+    fn insertion_sort_descending(mut container: Container<i32>) -> bool {
+        let mut data = container.data.clone();
+        data.sort_by(|a, b| b.cmp(a));
+        container.insertion(|a, b| a < b);
         Container { data } == container
     }
 }
