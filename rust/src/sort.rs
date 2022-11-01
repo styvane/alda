@@ -15,7 +15,13 @@ impl<T> Container<T> {
     pub fn new(data: Vec<T>) -> Self {
         Self { data }
     }
-    /// Return the number of items in the container.
+
+    /// Returns true the container is empty, otherwise it returns false.
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    /// Returns the number of items in the container.
     pub fn len(&self) -> usize {
         self.data.len()
     }
