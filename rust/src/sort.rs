@@ -122,7 +122,7 @@ mod tests {
     #[quickcheck]
     fn test_clrs_insertion_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
-        data.sort();
+        data.sort_by(|a, b| b.cmp(a));
         container.clrs_insertion(|a, b| a < b);
         Container { data } == container
     }
