@@ -13,9 +13,9 @@ func (c *Container[T]) Values() []T {
 	return c.values
 }
 
-// Clrs_insertion implement Cormen, Leiserson, Rivest, Stein
+// InsertionSort implements Cormen, Leiserson, Rivest, Stein
 // insertion sort algorithm.
-func (c *Container[T]) Clrs_insertion() {
+func (c *Container[T]) InsertionSort() {
 	if len(c.values) <= 1 {
 		return
 	}
@@ -26,4 +26,17 @@ func (c *Container[T]) Clrs_insertion() {
 			c.values[i+1], c.values[i] = c.values[i], c.values[i+1]
 		}
 	}
+}
+
+// Linearly search a value in a container.
+//
+// It returns the smallest index of the value if it is present,
+// otherwise, it returns -1
+func (c *Container[T]) LinearSearch(needle T) int {
+	for i, v := range c.values {
+		if v == needle {
+			return i
+		}
+	}
+	return -1
 }
