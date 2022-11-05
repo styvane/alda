@@ -9,7 +9,7 @@ use crate::Container;
 /// The [`Sort`] trait defines the various mechanism for sorting a
 /// container.
 pub trait Sort<T> {
-    /// Cormen, Charles, Ronald and Clifford insertion sort algorithm.
+    /// Cormen, Leiserson, Rivest, and Stein insertion sort algorithm.
     ///
     /// Sort the elements in the container using CLRS insertion sort
     /// algorithm in 3rd Edition.
