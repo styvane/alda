@@ -11,6 +11,7 @@
     clippy::missing_const_for_fn
 )]
 
+pub mod bits;
 pub mod search;
 pub mod sort;
 
