@@ -1,7 +1,9 @@
 // Package data defines a container data structure.
 package container
 
-import "golang.org/x/exp/constraints"
+import (
+	"golang.org/x/exp/constraints"
+)
 
 // Container is a wrapper around around a generic slice over some type T.
 type Container[T constraints.Ordered] struct {
@@ -39,4 +41,21 @@ func (c *Container[T]) LinearSearch(needle T) int {
 		}
 	}
 	return -1
+}
+
+// SelectionSort implements the selection sort algorithm.
+func (c *Container[T]) SelectionSort() {
+	if len(c.values) <= 1 {
+		return
+	}
+
+	for i := range c.values[:len(c.values)-1] {
+		min := i
+		for j := i + 1; j < len(c.values); j += 1 {
+			if c.values[j] < c.values[min] {
+				min = j
+			}
+		}
+		c.values[min], c.values[i] = c.values[i], c.values[min]
+	}
 }
