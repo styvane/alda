@@ -17,6 +17,9 @@ pub trait Sort<T> {
 
     /// Alternative version of CLRS insertion algorithm.
     fn insertion(&mut self, compare: impl Fn(&T, &T) -> bool);
+
+    /// Selection sort algorithm.
+    fn selection(&mut self, compare: impl Fn(&T, &T) -> bool);
 }
 
 impl<T> Sort<T> for Container<T>
@@ -49,9 +52,24 @@ where
             let key = self[j].clone();
             for i in (0..j).rev() {
                 if compare(&self[i], &key) {
-                    self.swap(i, i + 1);
+                    self.swap(i + 1, i);
                 }
             }
+        }
+    }
+
+    fn selection(&mut self, compare: impl Fn(&T, &T) -> bool) {
+        if self.len() <= 1 {
+            return;
+        }
+        for j in 0..self.len() - 1 {
+            let mut index = j;
+            for i in (j + 1)..self.len() {
+                if compare(&self[i], &self[index]) {
+                    index = i;
+                }
+            }
+            self.swap(index, j);
         }
     }
 }
@@ -99,6 +117,31 @@ mod tests {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
         container.insertion(|a, b| a < b);
+        Container { data } == container
+    }
+
+    #[quickcheck]
+    fn selection_sort_ascending(mut container: Container<i32>) -> bool {
+        let mut data = container.data.clone();
+        data.sort();
+        container.selection(|a, b| a < b);
+        Container { data } == container
+    }
+
+    #[test]
+    fn selection_sort() {
+        let mut container = Container::new(vec![1, -1, 0, 5, 9, 7]);
+        let mut data = container.data.clone();
+        data.sort();
+        container.selection(|a, b| a < b);
+        assert_eq!(Container { data }, container)
+    }
+
+    #[quickcheck]
+    fn selection_sort_descending(mut container: Container<i32>) -> bool {
+        let mut data = container.data.clone();
+        data.sort_by(|a, b| b.cmp(a));
+        container.selection(|a, b| a > b);
         Container { data } == container
     }
 }
