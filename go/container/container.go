@@ -59,3 +59,32 @@ func (c *Container[T]) SelectionSort() {
 		c.values[min], c.values[i] = c.values[i], c.values[min]
 	}
 }
+
+// MergeSort implements the merge sort algorithm.
+func (c *Container[T]) MergeSort(start, end int) {
+	if start < end-1 {
+		middle := (start + end) / 2
+		c.MergeSort(start, middle)
+		c.MergeSort(middle, end)
+		c.merge(start, middle, end)
+	}
+}
+
+// Merge two sorted container values.
+func (c *Container[T]) merge(start, middle, end int) {
+	left := make([]T, middle-start)
+	copy(left, c.values[start:middle])
+	right := make([]T, end-middle)
+	copy(right, c.values[middle:end])
+
+	for i, j, k := 0, 0, start; k < end; k += 1 {
+		if i < len(left) && j < len(right) && left[i] <= right[j] || j == len(right) {
+			c.values[k] = left[i]
+			i += 1
+		} else {
+			c.values[k] = right[j]
+			j += 1
+		}
+	}
+
+}
