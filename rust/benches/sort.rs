@@ -55,6 +55,17 @@ fn sorting_benchmark(c: &mut Criterion) {
                 })
             },
         );
+
+        group.bench_with_input(
+            BenchmarkId::new("MergeSort", container.len()),
+            &container,
+            |b, i| {
+                b.iter(|| {
+                    let mut container = i.clone();
+                    container.merge_sort(0, container.len());
+                })
+            },
+        );
     }
 
     group.finish();

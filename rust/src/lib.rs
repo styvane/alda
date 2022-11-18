@@ -23,7 +23,10 @@ pub struct Container<T> {
     data: Vec<T>,
 }
 
-impl<T> Container<T> {
+impl<T> Container<T>
+where
+    T: PartialOrd + Clone,
+{
     /// Creates new container instance.
     pub fn new(data: Vec<T>) -> Self {
         Self { data }
@@ -49,6 +52,29 @@ impl<T> Container<T> {
         ContainerIterator {
             items: &self.data,
             pos: 0,
+        }
+    }
+
+    /// Merges two sorted containers.
+    ///
+    /// This methods creates a new container and merges in two sorted container.
+    /// The resulting container element are the elements with the index in the range
+    /// of start..end but in sorted order.
+    pub(crate) fn merge(&mut self, start: usize, middle: usize, end: usize) {
+        let lhs = self.data[start..middle].to_vec();
+        let rhs = self.data[middle..end].to_vec();
+
+        let mut i = 0;
+        let mut j = 0;
+        for k in start..end {
+            if i < lhs.len() && j < rhs.len() && lhs[i] <= rhs[j] || i < lhs.len() && j == rhs.len()
+            {
+                self[k] = lhs[i].clone();
+                i += 1;
+            } else {
+                self[k] = rhs[j].clone();
+                j += 1;
+            }
         }
     }
 }

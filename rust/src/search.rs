@@ -14,7 +14,7 @@ pub trait Search<T> {
 
 impl<T> Search<T> for Container<T>
 where
-    T: PartialEq,
+    T: PartialEq + PartialOrd + Clone,
 {
     fn linear(&self, needle: T) -> Option<usize> {
         for (index, value) in self.iter().enumerate() {

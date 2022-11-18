@@ -20,6 +20,9 @@ pub trait Sort<T> {
 
     /// Selection sort algorithm.
     fn selection(&mut self, compare: impl Fn(&T, &T) -> bool);
+
+    /// Merge sort algorithm.
+    fn merge_sort(&mut self, start: usize, end: usize);
 }
 
 impl<T> Sort<T> for Container<T>
@@ -72,8 +75,16 @@ where
             self.swap(index, j);
         }
     }
-}
 
+    fn merge_sort(&mut self, start: usize, end: usize) {
+        if end > 0 && start < end - 1 {
+            let middle = (end + start) / 2;
+            self.merge_sort(start, middle);
+            self.merge_sort(middle, end);
+            self.merge(start, middle, end);
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use quickcheck::{Arbitrary, Gen};
@@ -128,20 +139,19 @@ mod tests {
         Container { data } == container
     }
 
-    #[test]
-    fn selection_sort() {
-        let mut container = Container::new(vec![1, -1, 0, 5, 9, 7]);
-        let mut data = container.data.clone();
-        data.sort();
-        container.selection(|a, b| a < b);
-        assert_eq!(Container { data }, container)
-    }
-
     #[quickcheck]
     fn selection_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
         container.selection(|a, b| a > b);
+        Container { data } == container
+    }
+
+    #[quickcheck]
+    fn merge_sort_ascending(mut container: Container<i32>) -> bool {
+        let mut data = container.data.clone();
+        data.sort();
+        container.merge_sort(0, data.len());
         Container { data } == container
     }
 }
