@@ -133,3 +133,25 @@ func TestBinSearch(t *testing.T) {
 	}
 
 }
+
+func TestRecBinSearch(t *testing.T) {
+	tests := []struct {
+		name     string
+		haystack Container[int]
+		needle   int
+		want     int
+	}{
+		{"empty container", Container[int]{values: []int{}}, 2, -1},
+		{"needle found", Container[int]{values: []int{1, 3, -1, 2}}, 3, 1},
+		{"return smallest index", Container[int]{values: []int{1, 4, 2, 2, 1, 3}}, 2, 2},
+		{"missing value", Container[int]{values: []int{1, 3, -1, 0}}, 7, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			index := tt.haystack.RecBinSearch(tt.needle)
+			assert.Equal(t, tt.want, index)
+		})
+	}
+
+}

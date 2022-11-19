@@ -129,10 +129,30 @@ func (c *Container[T]) BinSearch(needle T) int {
 			return mid
 		} else if c.values[mid] > needle {
 			high = mid - 1
-
 		} else {
 			low = mid + 1
 		}
 	}
 	return -1
+}
+
+// Recursively binary search a value in a sorted container.
+func (c *Container[T]) RecBinSearch(needle T) int {
+	var rec func(values []T, needle T) int
+
+	rec = func(values []T, needle T) int {
+		if len(values) == 0 {
+			return -1
+		}
+		mid := (len(values) - 1) / 2
+		if needle == values[mid] {
+			return mid
+		} else if needle > values[mid] {
+			return rec(values[mid+1:], needle)
+		} else {
+			return rec(values[:mid], needle)
+		}
+
+	}
+	return rec(c.values, needle)
 }
