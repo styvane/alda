@@ -20,7 +20,7 @@ use std::ops::{Index, IndexMut};
 /// The [`Container`] type is a wrapper around the containing data.
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Default)]
 pub struct Container<T> {
-    data: Vec<T>,
+    pub(crate) data: Vec<T>,
 }
 
 impl<T> Container<T>
