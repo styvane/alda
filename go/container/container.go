@@ -88,3 +88,29 @@ func (c *Container[T]) merge(start, middle, end int) {
 	}
 
 }
+
+// RecursiveInsort sorts a container elements using insertion sort.
+// It recursively sorts the first N-1 elements in the container and
+// insert the N-th element into its correct position.
+func (c *Container[T]) RecursiveInsort() {
+	var rec_sort func(values []T)
+	rec_sort = func(values []T) {
+		if len(values) <= 1 {
+			return
+		}
+
+		n := len(values) - 1
+		key := values[n]
+
+		rec_sort(values[:n])
+		for n := n - 1; n >= 0; n -= 1 {
+			if key < values[n] {
+				values[n+1], values[n] = values[n], values[n+1]
+			}
+		}
+
+	}
+
+	rec_sort(c.values)
+
+}
