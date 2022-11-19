@@ -43,7 +43,7 @@ func TestLinearSearch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			index := tt.haystack.LinearSearch(tt.needle)
-			assert.Equal(t, index, tt.want)
+			assert.Equal(t, tt.want, index)
 		})
 	}
 
@@ -107,6 +107,28 @@ func TestRecursiveInsertionSort(t *testing.T) {
 			tt.data.RecursiveInsort()
 			assert.Equalf(t, tt.want, tt.data.Values(), "want %v got %v", tt.want, tt.data.Values())
 
+		})
+	}
+
+}
+
+func TestBinSearch(t *testing.T) {
+	tests := []struct {
+		name     string
+		haystack Container[int]
+		needle   int
+		want     int
+	}{
+		{"empty container", Container[int]{values: []int{}}, 2, -1},
+		{"needle found", Container[int]{values: []int{1, 3, -1, 2}}, 3, 1},
+		{"return smallest index", Container[int]{values: []int{1, 2, 1, 3}}, 1, 0},
+		{"missing value", Container[int]{values: []int{1, 3, -1, 0}}, 7, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			index := tt.haystack.BinSearch(tt.needle)
+			assert.Equal(t, tt.want, index)
 		})
 	}
 

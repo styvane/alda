@@ -114,3 +114,25 @@ func (c *Container[T]) RecursiveInsort() {
 	rec_sort(c.values)
 
 }
+
+// BinSearch searches a value in a sorted container.
+// It returns the index of the value if the value is present.
+// If the value is not present, it returns -1
+func (c *Container[T]) BinSearch(needle T) int {
+	if len(c.values) == 0 {
+		return -1
+	}
+
+	for low, high := 0, len(c.values)-1; low <= high; {
+		mid := (low + high) / 2
+		if c.values[mid] == needle {
+			return mid
+		} else if c.values[mid] > needle {
+			high = mid - 1
+
+		} else {
+			low = mid + 1
+		}
+	}
+	return -1
+}

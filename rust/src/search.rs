@@ -55,20 +55,17 @@ where
     }
 
     fn rec_binsearch(&self, needle: &T) -> Option<usize> {
-        if self.is_empty() {
-            return None;
-        }
-
         fn rec<T: PartialEq + PartialOrd + Eq>(haystack: &[T], needle: &T) -> Option<usize> {
+            if haystack.is_empty() {
+                return None;
+            }
             let middle = haystack.len() / 2;
             if *needle == haystack[middle] {
                 Some(middle)
             } else if *needle > haystack[middle] {
                 rec(&haystack[middle + 1..], needle)
-            } else if *needle < haystack[middle] {
-                rec(&haystack[..middle], needle)
             } else {
-                None
+                rec(&haystack[..middle], needle)
             }
         }
         rec(&self.data, needle)
