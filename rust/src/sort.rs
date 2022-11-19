@@ -13,23 +13,29 @@ pub trait Sort<T> {
     ///
     /// Sort the elements in the container using CLRS insertion sort
     /// algorithm in 3rd Edition.
-    fn clrs_insertion(&mut self, compare: impl Fn(&T, &T) -> bool);
+    fn naive_insertion_sort(&mut self, compare: impl Fn(&T, &T) -> bool);
 
     /// Alternative version of CLRS insertion algorithm.
-    fn insertion(&mut self, compare: impl Fn(&T, &T) -> bool);
+    fn insertion_sort(&mut self, compare: impl Fn(&T, &T) -> bool);
 
     /// Selection sort algorithm.
-    fn selection(&mut self, compare: impl Fn(&T, &T) -> bool);
+    fn selection_sort(&mut self, compare: impl Fn(&T, &T) -> bool);
 
     /// Merge sort algorithm.
     fn merge_sort(&mut self, start: usize, end: usize);
+
+    /// Recursive insertion sort.
+
+    /// Recursively sort the N - 1 elements in the container
+    /// and the insert the N-th element in the sorted container.
+    fn rec_insertion_sort(&mut self);
 }
 
 impl<T> Sort<T> for Container<T>
 where
     T: Eq + PartialEq + PartialOrd + Ord + Clone,
 {
-    fn clrs_insertion(&mut self, compare: impl Fn(&T, &T) -> bool) {
+    fn naive_insertion_sort(&mut self, compare: impl Fn(&T, &T) -> bool) {
         if self.len() <= 1 {
             return;
         }
@@ -47,7 +53,7 @@ where
         }
     }
 
-    fn insertion(&mut self, compare: impl Fn(&T, &T) -> bool) {
+    fn insertion_sort(&mut self, compare: impl Fn(&T, &T) -> bool) {
         if self.len() <= 1 {
             return;
         }
@@ -61,7 +67,7 @@ where
         }
     }
 
-    fn selection(&mut self, compare: impl Fn(&T, &T) -> bool) {
+    fn selection_sort(&mut self, compare: impl Fn(&T, &T) -> bool) {
         if self.len() <= 1 {
             return;
         }
@@ -84,7 +90,26 @@ where
             self.merge(start, middle, end);
         }
     }
+
+    fn rec_insertion_sort(&mut self) {
+        fn insort<T: Clone + PartialOrd>(data: &mut [T]) {
+            if data.len() <= 1 {
+                return;
+            }
+            let len = data.len() - 1;
+            let key = data[len].clone();
+
+            insort(&mut data[0..len]);
+            for i in (0..len).rev() {
+                if data[i] > key {
+                    data.swap(i + 1, i);
+                }
+            }
+        }
+        insort(&mut self.data);
+    }
 }
+
 #[cfg(test)]
 mod tests {
     use quickcheck::{Arbitrary, Gen};
@@ -100,18 +125,18 @@ mod tests {
     }
 
     #[quickcheck]
-    fn test_clrs_insertion_sort_ascending(mut container: Container<i32>) -> bool {
+    fn test_insertion_sort_ascending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort();
-        container.clrs_insertion(|a, b| a > b);
+        container.naive_insertion_sort(|a, b| a > b);
         Container { data } == container
     }
 
     #[quickcheck]
-    fn test_clrs_insertion_sort_descending(mut container: Container<i32>) -> bool {
+    fn test_naiive_insertion_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
-        container.clrs_insertion(|a, b| a < b);
+        container.naive_insertion_sort(|a, b| a < b);
         Container { data } == container
     }
 
@@ -119,7 +144,7 @@ mod tests {
     fn insertion_sort_ascending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort();
-        container.insertion(|a, b| a > b);
+        container.insertion_sort(|a, b| a > b);
         Container { data } == container
     }
 
@@ -127,7 +152,7 @@ mod tests {
     fn insertion_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
-        container.insertion(|a, b| a < b);
+        container.insertion_sort(|a, b| a < b);
         Container { data } == container
     }
 
@@ -135,7 +160,7 @@ mod tests {
     fn selection_sort_ascending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort();
-        container.selection(|a, b| a < b);
+        container.selection_sort(|a, b| a < b);
         Container { data } == container
     }
 
@@ -143,7 +168,7 @@ mod tests {
     fn selection_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
-        container.selection(|a, b| a > b);
+        container.selection_sort(|a, b| a > b);
         Container { data } == container
     }
 
@@ -153,5 +178,14 @@ mod tests {
         data.sort();
         container.merge_sort(0, data.len());
         Container { data } == container
+    }
+
+    #[test]
+    fn rec_insertion_sort_ascending() {
+        let mut container = Container::new(vec![-9, 0, 1, 3, 2]);
+        let mut data = container.data.clone();
+        data.sort();
+        container.rec_insertion_sort();
+        assert_eq!(Container { data }, container);
     }
 }
