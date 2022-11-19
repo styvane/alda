@@ -43,10 +43,10 @@ where
             let middle = (low + high) / 2;
             match &self[middle].cmp(needle) {
                 Ordering::Less => {
-                    high = middle + 1;
+                    low = middle + 1;
                 }
                 Ordering::Greater => {
-                    low = middle - 1;
+                    high = middle - 1;
                 }
                 Ordering::Equal => return Some(middle),
             }
