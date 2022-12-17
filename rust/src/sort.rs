@@ -133,7 +133,7 @@ mod tests {
     }
 
     #[quickcheck]
-    fn test_naiive_insertion_sort_descending(mut container: Container<i32>) -> bool {
+    fn test_naive_insertion_sort_descending(mut container: Container<i32>) -> bool {
         let mut data = container.data.clone();
         data.sort_by(|a, b| b.cmp(a));
         container.naive_insertion_sort(|a, b| a < b);
