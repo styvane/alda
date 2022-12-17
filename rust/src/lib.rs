@@ -12,6 +12,7 @@
 )]
 
 pub mod bits;
+pub mod maximum_subarray;
 pub mod search;
 pub mod sort;
 
