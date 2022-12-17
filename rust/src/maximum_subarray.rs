@@ -105,6 +105,39 @@ impl Container<i64> {
             cross
         }
     }
+
+    /// Returns maxmimum subarray.
+    pub fn brute_force_max_subarray(&self, low: usize, high: usize) -> Option<MaxSubarray<i64>> {
+        if self.is_empty() {
+            return None;
+        } else if low == high - 1 {
+            return Some(MaxSubarray {
+                left_index: low,
+                right_index: low,
+                sum: self[low],
+            });
+        }
+
+        let mut max_sum = i64::MIN;
+        let (mut left_index, mut right_index) = (0, 0);
+
+        for i in low..high {
+            let mut sum = self[i];
+            for j in i + 1..high {
+                sum += self[j];
+                if sum > max_sum {
+                    max_sum = sum;
+                    (left_index, right_index) = (i, j);
+                }
+            }
+        }
+
+        Some(MaxSubarray {
+            left_index,
+            right_index,
+            sum: max_sum,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -129,6 +162,20 @@ mod tests {
     fn find_maximum_subarray() {
         let container = Container::new(vec![1, -2, 3, 1, -3, 7, 3]);
         let value = container.find_max_subarray(0, 7);
+        assert_eq!(
+            Some(MaxSubarray {
+                left_index: 2,
+                right_index: 6,
+                sum: 11
+            }),
+            value
+        )
+    }
+
+    #[test]
+    fn brute_force_maximum_subarray() {
+        let container = Container::new(vec![1, -2, 3, 1, -3, 7, 3]);
+        let value = container.brute_force_max_subarray(0, 7);
         assert_eq!(
             Some(MaxSubarray {
                 left_index: 2,
