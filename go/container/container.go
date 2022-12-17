@@ -208,3 +208,20 @@ func (n *Number[T]) findMaximumXSubArray(low, mid, high int) (int, int, T) {
 
 	return left_ix, right_ix, left_sum + right_sum
 }
+
+// Find the maximum crossing subarray using brute force.
+func (n *Number[T]) BruteForceMaximumSubArray(low, high int) (left_ix, right_ix int, max_sum T) {
+	for i := low; i < high; i += 1 {
+		sum := n.values[i]
+		for j := i + 1; j < high; j += 1 {
+			sum += n.values[j]
+			if sum > max_sum {
+				max_sum = sum
+				left_ix = i
+				right_ix = j
+
+			}
+		}
+	}
+	return
+}

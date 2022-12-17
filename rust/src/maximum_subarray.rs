@@ -3,16 +3,14 @@
 use crate::Container;
 
 use std::cmp::Ordering;
+use std::ops::Range;
 
 /// The `MaxSubarray` type represents the maximum the maximum
 /// sub-array data type.
 #[derive(Debug, Clone, Default)]
 pub struct MaxSubarray<T> {
-    /// Index of the most left element in the subarray.
-    pub left_index: usize,
-
-    /// Index of the most right element in the subarray.
-    pub right_index: usize,
+    /// Index range of the elements in the subarray.
+    pub range: Range<usize>,
 
     /// Sum of the element in the [left_index; right_index]
     pub sum: T,
@@ -51,30 +49,29 @@ impl Container<i64> {
 
         let mut sum = 0;
         let mut left_sum = i64::MIN;
-        let mut left_index = mid;
+        let mut start = mid;
 
         for v in self.data[low..mid].iter().rev() {
             sum += v;
             if sum > left_sum {
                 left_sum = sum;
-                left_index -= 1;
+                start -= 1;
             }
         }
 
         sum = 0;
         let mut right_sum = i64::MIN;
-        let mut right_index = mid;
+        let mut end = mid;
         for v in self.data[mid..high].iter() {
             sum += v;
             if sum > right_sum {
                 right_sum = sum;
-                right_index += 1;
+                end += 1;
             }
         }
 
         Some(MaxSubarray {
-            left_index,
-            right_index,
+            range: Range { start, end },
             sum: left_sum + right_sum,
         })
     }
@@ -85,8 +82,10 @@ impl Container<i64> {
             return None;
         } else if low == high - 1 {
             return Some(MaxSubarray {
-                left_index: low,
-                right_index: low,
+                range: Range {
+                    start: low,
+                    end: low,
+                },
                 sum: self[low],
             });
         }
@@ -112,14 +111,16 @@ impl Container<i64> {
             return None;
         } else if low == high - 1 {
             return Some(MaxSubarray {
-                left_index: low,
-                right_index: low,
+                range: Range {
+                    start: low,
+                    end: low,
+                },
                 sum: self[low],
             });
         }
 
         let mut max_sum = i64::MIN;
-        let (mut left_index, mut right_index) = (0, 0);
+        let (mut start, mut end) = (0, 0);
 
         for i in low..high {
             let mut sum = self[i];
@@ -127,14 +128,54 @@ impl Container<i64> {
                 sum += self[j];
                 if sum > max_sum {
                     max_sum = sum;
-                    (left_index, right_index) = (i, j);
+                    (start, end) = (i, j);
                 }
             }
         }
 
         Some(MaxSubarray {
-            left_index,
-            right_index,
+            range: Range { start, end },
+            sum: max_sum,
+        })
+    }
+
+    /// Iteratively find the maximum sub-array.
+
+    pub fn iteratively_find_max_subarray(
+        &self,
+        low: usize,
+        high: usize,
+    ) -> Option<MaxSubarray<i64>> {
+        let mut max_sum = i64::MIN;
+        let mut current_low = low;
+        let mut sum = 0;
+        let mut range = Range { start: 0, end: 0 };
+
+        for (i, v) in self.data[low..high]
+            .iter()
+            .enumerate()
+            .map(|(i, v)| (i + low, v))
+        {
+            if i == low {
+                current_low = i;
+                sum = *v;
+            } else {
+                sum += v;
+            }
+
+            if *v >= sum {
+                sum = *v;
+            }
+
+            if sum > max_sum {
+                max_sum = sum;
+                range.start = current_low;
+                range.end = i;
+            }
+        }
+
+        Some(MaxSubarray {
+            range,
             sum: max_sum,
         })
     }
@@ -150,8 +191,7 @@ mod tests {
         let value = container.find_max_crossing_subarray(0, 3, 7);
         assert_eq!(
             Some(MaxSubarray {
-                left_index: 2,
-                right_index: 6,
+                range: Range { start: 2, end: 6 },
                 sum: 11
             }),
             value
@@ -164,8 +204,7 @@ mod tests {
         let value = container.find_max_subarray(0, 7);
         assert_eq!(
             Some(MaxSubarray {
-                left_index: 2,
-                right_index: 6,
+                range: Range { start: 2, end: 6 },
                 sum: 11
             }),
             value
@@ -178,8 +217,20 @@ mod tests {
         let value = container.brute_force_max_subarray(0, 7);
         assert_eq!(
             Some(MaxSubarray {
-                left_index: 2,
-                right_index: 6,
+                range: Range { start: 2, end: 6 },
+                sum: 11
+            }),
+            value
+        )
+    }
+
+    #[test]
+    fn iteratively_find_maximum_subarray() {
+        let container = Container::new(vec![1, -2, 3, 1, -3, 7, 3]);
+        let value = container.iteratively_find_max_subarray(0, 7);
+        assert_eq!(
+            Some(MaxSubarray {
+                range: Range { start: 2, end: 6 },
                 sum: 11
             }),
             value

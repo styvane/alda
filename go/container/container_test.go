@@ -171,3 +171,11 @@ func TestMaximumSubArray(t *testing.T) {
 	assert.Equal(t, right, 5)
 	assert.Equal(t, sum, 8)
 }
+
+func TestBruteForceMaximumSubArray(t *testing.T) {
+	number := Number[int]{values: []int{1, -2, 3, 1, -3, 7, 3}}
+	left, right, sum := number.BruteForceMaximumSubArray(0, 6)
+	assert.Equal(t, left, 2)
+	assert.Equal(t, right, 5)
+	assert.Equal(t, sum, 8)
+}
