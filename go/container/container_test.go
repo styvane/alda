@@ -155,3 +155,19 @@ func TestRecBinSearch(t *testing.T) {
 	}
 
 }
+
+func TestMaximumCrossing(t *testing.T) {
+	number := Number[int]{values: []int{1, -2, 3, 1, -3, 7, 3}}
+	left, right, sum := number.findMaximumXSubArray(0, 3, 7)
+	assert.Equal(t, left, 2)
+	assert.Equal(t, right, 6)
+	assert.Equal(t, sum, 11)
+}
+
+func TestMaximumSubArray(t *testing.T) {
+	number := Number[int]{values: []int{1, -2, 3, 1, -3, 7, 3}}
+	left, right, sum := number.FindMaximumSubArray(0, 6)
+	assert.Equal(t, left, 2)
+	assert.Equal(t, right, 5)
+	assert.Equal(t, sum, 8)
+}

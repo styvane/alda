@@ -156,3 +156,55 @@ func (c *Container[T]) RecBinSearch(needle T) int {
 	}
 	return rec(c.values, needle)
 }
+
+type Number[T constraints.Signed] struct {
+	values []T
+}
+
+// Find the maximum subarray of a list of values.
+func (n *Number[T]) FindMaximumSubArray(low, high int) (left, right int, sum T) {
+	if len(n.values) == 0 || low == high-1 {
+		return
+	}
+
+	mid := (low + high) / 2
+
+	left_min, left_max, left_sum := n.FindMaximumSubArray(low, mid)
+	right_min, right_max, right_sum := n.FindMaximumSubArray(mid, high)
+	cross_min, cross_max, cross_sum := n.findMaximumXSubArray(low, mid, high)
+	if left_sum > right_sum && left_sum > cross_sum {
+		return left_min, left_max, left_sum
+	} else if right_sum > left_sum && right_sum > cross_sum {
+		return right_min, right_max, right_sum
+	} else {
+		return cross_min, cross_max, cross_sum
+	}
+}
+
+// Find the maximum  crossing subarray.
+func (n *Number[T]) findMaximumXSubArray(low, mid, high int) (int, int, T) {
+	var sum, left_sum T
+	left_ix := 0
+
+	for i := mid - 1; i >= low; i -= 1 {
+		sum += n.values[i]
+		if sum > left_sum {
+			left_sum = sum
+			left_ix = i
+		}
+	}
+
+	sum = 0
+	var right_sum T
+	right_ix := 0
+
+	for i := mid; i < high; i += 1 {
+		sum += n.values[i]
+		if sum > right_sum {
+			right_sum = sum
+			right_ix = i
+		}
+	}
+
+	return left_ix, right_ix, left_sum + right_sum
+}
