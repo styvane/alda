@@ -225,3 +225,30 @@ func (n *Number[T]) BruteForceMaximumSubArray(low, high int) (left_ix, right_ix 
 	}
 	return
 }
+
+// Find the maximumm subarray iteratively.
+func (n *Number[T]) IterativeMaximumSubArray(low, high int) (left_ix, right_ix int, max_sum T) {
+	var sum T
+	var current_low int
+
+	for i := low; i < high; i += 1 {
+		if i == low {
+			sum = n.values[i]
+			current_low = i
+		} else {
+			sum += n.values[i]
+		}
+
+		if n.values[i] >= sum {
+			current_low = i
+			sum = n.values[i]
+		}
+
+		if sum > max_sum {
+			max_sum = sum
+			left_ix = current_low
+			right_ix = i
+		}
+	}
+	return
+}
