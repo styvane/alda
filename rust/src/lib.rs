@@ -12,6 +12,7 @@
 )]
 
 pub mod bits;
+pub mod heap;
 pub mod maximum_subarray;
 pub mod search;
 pub mod sort;
@@ -54,6 +55,11 @@ where
             items: &self.data,
             pos: 0,
         }
+    }
+
+    /// Merge a list of sorted containers.
+    pub fn merge_all_into(self, containers: &[Self]) -> Self {
+        todo!()
     }
 
     /// Merges two sorted containers.
