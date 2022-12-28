@@ -2,12 +2,12 @@
 //!
 //! This module implements various heap operations on the [`Container`](crate::Container) type.
 
-use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Index, IndexMut};
+use std::{cmp::Ordering, marker::PhantomData};
 
 /// Heap type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Heap<T, K> {
     buffer: Vec<T>,
     size: usize,
@@ -58,6 +58,15 @@ where
     pub fn new(buffer: Vec<T>) -> Self {
         Self {
             buffer,
+            size: 0,
+            marker: PhantomData::default(),
+        }
+    }
+
+    /// Creates new heap with the specified capacity.
+    pub fn with_capacity(cap: usize) -> Self {
+        Self {
+            buffer: Vec::with_capacity(cap),
             size: 0,
             marker: PhantomData::default(),
         }
@@ -188,7 +197,7 @@ impl Heap<i64, MaxHeap> {
     /// Insert new key into the heap.
     pub fn max_insert_key(&mut self, key: i64) {
         let index = self.size;
-        self[index] = i64::MIN;
+        self.buffer.push(i64::MIN);
         self.increase_key(index, key);
         self.size += 1;
     }
@@ -223,6 +232,15 @@ where
         }
     }
 
+    /// Build min heap.
+    pub fn build_min_heap(&mut self) {
+        let size = self.buffer.len();
+        self.size = size;
+        for i in (0..size / 2).rev() {
+            self.min_heapify(i);
+        }
+    }
+
     /// Returns the minimum element in the heap
     pub fn min(&self) -> Option<&T> {
         self.iter().next()
@@ -247,7 +265,13 @@ where
             return None;
         }
         let prev = mem::replace(&mut self.buffer[index], key);
-        self.min_heapify(index);
+        let mut index = index;
+        let mut parent = self.parent(index);
+        while index < self.size && self[index] < self[parent] {
+            self.buffer.swap(index, parent);
+            index = parent;
+            parent = self.parent(index);
+        }
         Some(prev)
     }
 
@@ -273,9 +297,76 @@ impl Heap<i64, MinHeap> {
     /// Insert the key into the min heap.
     pub fn min_insert_key(&mut self, key: i64) {
         let index = self.size;
-        self[index] = i64::MAX;
-        self.decrease_key(index, key);
+        self.buffer.push(i64::MAX);
         self.size += 1;
+        self.decrease_key(index, key);
+    }
+}
+
+/// Heap value type
+#[derive(Clone, Debug)]
+pub struct Value<T> {
+    /// Value key.
+    pub key: T,
+
+    /// Value index
+    pub index: usize,
+}
+
+impl<T> PartialEq for Value<T>
+where
+    T: PartialEq + Eq + Ord + PartialOrd + Clone,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+impl<T> PartialOrd for Value<T>
+where
+    T: PartialEq + Eq + Ord + PartialOrd + Clone,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.key.partial_cmp(&other.key)
+    }
+}
+
+impl<T> Ord for Value<T>
+where
+    T: PartialEq + Eq + Ord + PartialOrd + Clone,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.key.cmp(&other.key)
+    }
+}
+impl<T> Eq for Value<T> where T: PartialEq + Eq + Ord + PartialOrd + Clone {}
+
+impl Heap<Value<i64>, MinHeap> {
+    /// Insert the key into the min heap.
+    pub fn min_insert_key(&mut self, value: Value<i64>) {
+        self.buffer.push(Value {
+            key: i64::MAX,
+            index: value.index,
+        });
+
+        let index = self.size;
+        self.size += 1;
+        self.decrease_min_key(index, value);
+    }
+
+    /// Decrease the key at the specified index.
+    /// On success, it returns the old value.
+    pub fn decrease_min_key(&mut self, index: usize, value: Value<i64>) -> Option<Value<i64>> {
+        if index >= self.size || self[index] < value {
+            return None;
+        }
+        let prev = mem::replace(&mut self.buffer[index], value);
+        let mut index = index;
+        while index > 0 && self[index] < self[self.parent(index)] {
+            let parent = self.parent(index);
+            self.buffer.swap(index, parent);
+            index = parent;
+        }
+        Some(prev)
     }
 }
 

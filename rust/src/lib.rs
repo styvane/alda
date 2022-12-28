@@ -19,6 +19,8 @@ pub mod sort;
 
 use std::ops::{Index, IndexMut};
 
+use heap::{Heap, Value};
+
 /// The [`Container`] type is a wrapper around the containing data.
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Default)]
 pub struct Container<T> {
@@ -57,11 +59,6 @@ where
         }
     }
 
-    /// Merge a list of sorted containers.
-    pub fn merge_all_into(self, containers: &[Self]) -> Self {
-        todo!()
-    }
-
     /// Merges two sorted containers.
     ///
     /// This methods creates a new container and merges in two sorted container.
@@ -85,7 +82,6 @@ where
         }
     }
 }
-
 impl<T> Index<usize> for Container<T> {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output {
@@ -116,5 +112,48 @@ impl<'a, T> Iterator for ContainerIterator<'a, T> {
         } else {
             None
         }
+    }
+}
+
+/// Merge a list of sorted containers.
+pub fn merge_all_into(containers: &[&Container<i64>]) -> Container<i64> {
+    let cap = containers.iter().map(|c| c.len()).sum();
+    let mut buffer = Vec::with_capacity(cap);
+    let mut containers: Vec<_> = containers.iter().map(|c| c.iter()).collect();
+    for index in 0..containers.len() {
+        if let Some(&key) = containers.get_mut(index).and_then(|i| i.next()) {
+            buffer.push(Value { key, index });
+        }
+    }
+    let mut heap = Heap::new(buffer);
+    heap.build_min_heap();
+
+    let mut merged = Vec::with_capacity(cap);
+    while let Some(Value { key, index }) = heap.extract_min() {
+        merged.push(key);
+        if let Some(&key) = containers.get_mut(index).and_then(|i| i.next()) {
+            heap.min_insert_key(Value { key, index });
+        }
+    }
+    Container::new(merged)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn merge_sorted_list() {
+        let list = &[
+            &Container::new(vec![1, 3, 5, 7]),
+            &Container::new(vec![-12, -11, -10, -9, 0]),
+            &Container::new(vec![2, 4, 6, 8]),
+        ];
+
+        let merge = merge_all_into(list);
+        assert_eq!(
+            merge,
+            Container::new(vec![-12, -11, -10, -9, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+        )
     }
 }
