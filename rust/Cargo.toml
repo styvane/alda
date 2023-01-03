@@ -13,9 +13,11 @@ categories = ["algorithms", "data-structures"]
 name = "sort"
 harness = false
 
+[dependencies]
+rand = "0.8"
+
 [dev-dependencies]
 quickcheck = "1"
 quickcheck_macros = "1"
 criterion = "0.4"
 fake = "2.5"
-rand = "0.8"

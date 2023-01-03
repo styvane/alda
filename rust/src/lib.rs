@@ -86,6 +86,20 @@ where
             }
         }
     }
+
+    // Partition the container items in the specified bounds.
+    pub(crate) fn partition(&mut self, start: usize, end: usize) -> usize {
+        let Some(pivot) = self.iter().last().cloned() else {return 0;};
+        let mut last_smallest = start;
+        for index in start..end - 1 {
+            if self[index] <= pivot {
+                self.swap(last_smallest, index);
+                last_smallest += 1;
+            }
+        }
+        self.swap(last_smallest, end - 1);
+        last_smallest
+    }
 }
 impl<T> Index<usize> for Container<T> {
     type Output = T;

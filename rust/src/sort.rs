@@ -2,6 +2,8 @@
 //!
 //! This module implements various sorting algorithms.
 
+use rand::Rng;
+
 use crate::Container;
 
 /// Sort trait
@@ -29,6 +31,12 @@ pub trait Sort<T> {
     /// Recursively sort the N - 1 elements in the container
     /// and the insert the N-th element in the sorted container.
     fn rec_insertion_sort(&mut self);
+
+    /// QuickSort algorithm.
+    fn quick_sort(&mut self, start: usize, end: usize);
+
+    /// QuickSort algorithm.
+    fn randomize_quick_sort(&mut self, start: usize, end: usize);
 }
 
 impl<T> Sort<T> for Container<T>
@@ -108,6 +116,24 @@ where
         }
         insort(&mut self.data);
     }
+
+    fn quick_sort(&mut self, start: usize, end: usize) {
+        if start < end {
+            let mid = self.partition(start, end);
+            self.quick_sort(start, mid);
+            self.quick_sort(mid + 1, end);
+        }
+    }
+
+    fn randomize_quick_sort(&mut self, start: usize, end: usize) {
+        let index = rand::thread_rng().gen_range(start..end);
+        self.swap(index, end - 1);
+        if start < end {
+            let mid = self.partition(start, end);
+            self.quick_sort(start, mid);
+            self.quick_sort(mid + 1, end);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -186,6 +212,15 @@ mod tests {
         let mut data = container.data.clone();
         data.sort();
         container.rec_insertion_sort();
+        assert_eq!(Container { data }, container);
+    }
+
+    #[test]
+    fn quicksort() {
+        let mut container = Container::new(vec![-9, 0, 1, 3, 2]);
+        let mut data = container.data.clone();
+        data.sort();
+        container.quick_sort(0, data.len());
         assert_eq!(Container { data }, container);
     }
 }
