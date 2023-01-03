@@ -15,6 +15,11 @@ func (c *Container[T]) Values() []T {
 	return c.values
 }
 
+// Returns the number of elements in the container.
+func (c *Container[T]) Len() int {
+	return len(c.values)
+}
+
 // InsertionSort implements Cormen, Leiserson, Rivest, Stein
 // insertion sort algorithm.
 func (c *Container[T]) InsertionSort() {
@@ -251,4 +256,29 @@ func (n *Number[T]) IterativeMaximumSubArray(low, high int) (left_ix, right_ix i
 		}
 	}
 	return
+}
+
+func (c *Container[T]) partition(start, end int) int {
+	pivot := c.values[end-1]
+	i := start - 1
+	for j := start; j < end-1; j += 1 {
+		if c.values[j] <= pivot {
+			i += 1
+			c.values[i], c.values[j] = c.values[j], c.values[i]
+		}
+	}
+	i += 1
+	c.values[i], c.values[end-1] = c.values[end-1], c.values[i]
+	return i
+}
+
+// QuickSort sorts a container using quicksort algorithm.
+func (c *Container[T]) QuickSort(start, end int) {
+	if start < end {
+		mid := c.partition(start, end)
+		c.QuickSort(start, mid)
+		c.QuickSort(mid+1, end)
+
+	}
+
 }
