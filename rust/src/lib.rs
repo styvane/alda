@@ -59,6 +59,11 @@ where
         }
     }
 
+    /// Returns a reference to the inner data.
+    pub fn inner(&self) -> &[T] {
+        &self.data
+    }
+
     /// Merges two sorted containers.
     ///
     /// This methods creates a new container and merges in two sorted container.

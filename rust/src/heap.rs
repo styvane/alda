@@ -48,7 +48,8 @@ impl<'a, T> Iterator for Iter<'a, T> {
 }
 
 /// Max Heap type
-struct MaxHeap;
+#[derive(Debug)]
+pub struct MaxHeap;
 
 impl<T, K> Heap<T, K>
 where
