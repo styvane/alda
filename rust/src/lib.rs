@@ -16,6 +16,7 @@ pub mod heap;
 pub mod maximum_subarray;
 pub mod search;
 pub mod sort;
+pub mod stack;
 
 use std::ops::{Index, IndexMut};
 
