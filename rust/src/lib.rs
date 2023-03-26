@@ -12,12 +12,15 @@
 )]
 
 pub mod bits;
+pub mod error;
 pub mod heap;
 pub mod maximum_subarray;
 pub mod queue;
 pub mod search;
 pub mod sort;
 pub mod stack;
+
+pub use self::error::Error;
 
 use std::ops::{Index, IndexMut};
 
