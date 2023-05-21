@@ -14,6 +14,7 @@
 pub mod bits;
 pub mod error;
 pub mod heap;
+pub mod list;
 pub mod maximum_subarray;
 pub mod queue;
 pub mod search;
