@@ -2,16 +2,16 @@
 //!
 //! This module implements various stack data structures.
 
-/// SimpleStack is a stack as a wrapper around vector.
+/// DummyStack is a stack as a wrapper around vector.
 #[derive(Clone, Debug, Default)]
-pub struct SimpleStack<T> {
+pub struct DummyStack<T> {
     /// Buffer data.
     buf: Vec<T>,
     /// The position of the next element on the stack.
     top: usize,
 }
 
-impl<T> SimpleStack<T> {
+impl<T> DummyStack<T> {
     /// Pushes an element onto the stack.
     pub fn push(&mut self, elem: T) {
         self.buf.push(elem);
@@ -36,12 +36,12 @@ impl<T> SimpleStack<T> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::SimpleStack;
+mod dummy_stack_tests {
+    use super::DummyStack;
 
     #[test]
-    fn test_simple_stack() {
-        let mut stack = SimpleStack::default();
+    fn test_dummy_stack() {
+        let mut stack = DummyStack::default();
         stack.push(1);
         stack.push(2);
         stack.push(3);
