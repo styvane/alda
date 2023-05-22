@@ -7,7 +7,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-	list := NewList[int]()
+	list := &List[int]{}
 	list.Insert(1)
 	node := list.head
 	list.Insert(2)

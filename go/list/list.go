@@ -10,6 +10,7 @@ type List[T comparable] struct {
 type Node[T comparable] struct {
 	elem T
 	next *Node[T]
+	prev *Node[T]
 }
 
 // Creates new node.
@@ -19,16 +20,11 @@ func NewNode[T comparable](elem T) *Node[T] {
 	return node
 }
 
-// Create new list.
-func NewList[T comparable]() *List[T] {
-	return &List[T]{}
-}
-
 // Insert new node to the list.
 //
 // It inserts the new element by splicing the list on the head.
 func (l *List[T]) Insert(elem T) {
-	node := Node[T]{elem, nil}
+	node := Node[T]{elem, nil, nil}
 	node.next = l.head
 	l.head = &node
 }
@@ -57,4 +53,32 @@ func (l *List[T]) Search(elem T) *Node[T] {
 		c = c.next
 	}
 	return c
+}
+
+// LinkedList is a double linked-list
+type LinkedList[T comparable] struct {
+	head *Node[T]
+}
+
+// Insert a node with the given value into the list.
+func (l *LinkedList[T]) Insert(elem T) {
+	n := NewNode(elem)
+	n.next = l.head
+	if l.head != nil {
+		l.head.prev = n
+	}
+	l.head = n
+}
+
+// Delete a node from the linked-list.
+func (l *LinkedList[T]) Delete(n *Node[T]) {
+	if n.prev != nil {
+		n.prev.next = n.next
+	} else {
+		l.head = n.next
+	}
+
+	if n.next != nil {
+		n.next.prev = n.prev
+	}
 }
